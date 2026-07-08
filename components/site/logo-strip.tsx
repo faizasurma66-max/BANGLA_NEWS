@@ -14,7 +14,6 @@ export function LogoStrip({ outlets }: { outlets: Outlet[] }) {
         <Link
           key={o.id}
           href={`/view/${o.id}`}
-          prefetch={false}
           title={o.name}
           className="grid h-10 w-10 place-items-center rounded-xl border border-line bg-surface transition hover:-translate-y-0.5 hover:border-accent-ring hover:shadow-sm"
         >

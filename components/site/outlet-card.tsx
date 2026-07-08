@@ -75,7 +75,7 @@ export function OutletCard({
   }
 
   return (
-    <Link href={`/view/${outlet.id}`} prefetch={false} className={cardClasses}>
+    <Link href={`/view/${outlet.id}`} className={cardClasses}>
       {inner}
     </Link>
   );

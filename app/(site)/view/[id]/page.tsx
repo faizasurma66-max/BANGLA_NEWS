@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { ArrowUpRight, ChevronLeft, Info } from "lucide-react";
-import { getViewData, getOutletLight, getAllOutlets } from "@/lib/queries";
+import { getViewData, getOutletLight } from "@/lib/queries";
 import { OutletGrid } from "@/components/site/outlet-grid";
 import { SectionHeader } from "@/components/site/section-header";
 import { ClickBeacon } from "@/components/site/click-beacon";
@@ -10,14 +10,10 @@ import { hostname, faviconUrl } from "@/lib/utils";
 
 type Params = { params: Promise<{ id: string }> };
 
-// Pre-render every outlet's viewer as static HTML (ISR) so the shell is instant.
-// New/edited outlets render on-demand and are revalidated by admin writes.
-export const revalidate = 3600;
-
-export async function generateStaticParams() {
-  const outlets = await getAllOutlets();
-  return outlets.map((o) => ({ id: o.id }));
-}
+// Dynamic on purpose: this makes the loading.tsx skeleton show INSTANTLY on
+// every click (static routes skip the loading state). The queries are small +
+// targeted, and click counting is a non-blocking client beacon.
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { id } = await params;

@@ -92,7 +92,6 @@ export function OutletSearch({
                     ) : (
                       <Link
                         href={`/view/${r.id}`}
-                        prefetch={false}
                         className="flex items-center justify-between gap-3 px-4 py-2.5 hover:bg-band"
                       >
                         <span className="min-w-0">
