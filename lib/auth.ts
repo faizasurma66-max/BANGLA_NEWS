@@ -5,10 +5,18 @@ import { env } from "./env";
 
 /** Constant-time password check against ADMIN_PASSWORD. */
 export async function verifyPassword(input: string): Promise<boolean> {
-  const expected = env.adminPassword;
-  if (!expected) return false;
+  // Trim to tolerate stray whitespace/newlines pasted into the env var
+  // (a common cause of "correct password rejected" on hosts like Vercel).
+  const expected = env.adminPassword?.trim();
+  if (!expected) {
+    console.warn(
+      "[auth] ADMIN_PASSWORD is not set — every login will be rejected. " +
+        "Set it in your host's environment variables and redeploy.",
+    );
+    return false;
+  }
   const { timingSafeEqual } = await import("node:crypto");
-  const a = Buffer.from(String(input));
+  const a = Buffer.from(String(input).trim());
   const b = Buffer.from(expected);
   if (a.length !== b.length) {
     timingSafeEqual(a, a); // burn comparable time
