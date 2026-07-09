@@ -158,6 +158,7 @@ type Seed = [name: string, url: string, featured?: boolean, name_bn?: string];
 function build(categorySlug: string, seeds: Seed[]): Outlet[] {
   return seeds.map(([name, url, featured, name_bn], i) => ({
     id: `${categorySlug}__${slugify(name)}`,
+    slug: slugify(name),
     category_slug: categorySlug,
     name,
     url,

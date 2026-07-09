@@ -37,6 +37,7 @@ function normOutlet(row: Record<string, unknown>): Outlet {
   const category = row.category as { slug?: string } | undefined;
   return {
     id: row.id as string,
+    slug: (row.slug as string) ?? null,
     category_slug: category?.slug ?? (row.category_slug as string) ?? "",
     name: row.name as string,
     name_bn: (row.name_bn as string) ?? null,
@@ -117,6 +118,30 @@ export async function getDivisions(): Promise<Category[]> {
 
 export async function getOutletById(id: string): Promise<Outlet | undefined> {
   return (await getAllOutlets()).find((o) => o.id === id);
+}
+
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** Fetch one outlet by pretty slug (or uuid) — fast targeted query. */
+export async function getOutletByHandle(
+  handle: string,
+): Promise<Outlet | undefined> {
+  const db = supabasePublic();
+  if (db) {
+    try {
+      const col = UUID_RE.test(handle) ? "id" : "slug";
+      const { data } = await db
+        .from("outlets")
+        .select("*, category:categories(slug)")
+        .eq(col, handle)
+        .maybeSingle();
+      if (data) return normOutlet(data);
+    } catch (e) {
+      console.warn("[queries] getOutletByHandle failed:", e);
+    }
+  }
+  return SEED_OUTLETS.find((o) => o.id === handle || o.slug === handle);
 }
 
 /** Fast single-outlet fetch (targeted query, not the whole table). */

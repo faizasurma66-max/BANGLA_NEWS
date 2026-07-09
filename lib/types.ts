@@ -22,6 +22,8 @@ export interface Category {
 export interface Outlet {
   /** uuid in Supabase; kebab slug in the bundled fallback dataset. */
   id: string;
+  /** pretty URL handle, e.g. "prothom-alo" (used by /read/[slug]). */
+  slug?: string | null;
   category_slug: string;
   name: string;
   name_bn?: string | null;

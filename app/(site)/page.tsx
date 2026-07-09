@@ -31,6 +31,7 @@ export default async function HomePage() {
 
   const searchItems: SearchItem[] = allOutlets.map((o) => ({
     id: o.id,
+    slug: o.slug,
     name: o.name,
     name_bn: o.name_bn,
     url: o.url,

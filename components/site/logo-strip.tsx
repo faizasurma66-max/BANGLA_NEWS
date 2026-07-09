@@ -13,7 +13,7 @@ export function LogoStrip({ outlets }: { outlets: Outlet[] }) {
       {outlets.map((o) => (
         <Link
           key={o.id}
-          href={`/view/${o.id}`}
+          href={`/read/${o.slug ?? o.id}`}
           title={o.name}
           className="grid h-10 w-10 place-items-center rounded-xl border border-line bg-surface transition hover:-translate-y-0.5 hover:border-accent-ring hover:shadow-sm"
         >

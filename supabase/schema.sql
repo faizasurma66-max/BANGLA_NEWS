@@ -28,6 +28,7 @@ create table if not exists public.outlets (
   category_id   uuid not null references public.categories(id) on delete cascade,
   name          text not null,
   name_bn       text,
+  slug          text,
   url           text not null,
   logo_url      text,
   description   text,
