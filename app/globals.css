@@ -7,16 +7,16 @@
   border-line, bg-accent, font-bangla, rounded-card, etc.).
 */
 @theme {
-  /* surfaces */
-  --color-paper: #faf8f4; /* page canvas — warm white */
+  /* surfaces — clean white newspaper aesthetic */
+  --color-paper: #ffffff; /* page canvas — pure white */
   --color-surface: #ffffff; /* cards */
-  --color-band: #f2efe8; /* soft grey section bands */
-  --color-ink: #17130d; /* near-black, warm */
-  --color-ink-soft: #3a352d;
-  --color-muted: #6c655b; /* secondary text */
-  --color-faint: #9a9389;
-  --color-line: #e7e1d6; /* hairline borders */
-  --color-line-strong: #d8d0c2;
+  --color-band: #f6f7f8; /* very light grey section separation */
+  --color-ink: #14151a; /* near-black, neutral */
+  --color-ink-soft: #383b44;
+  --color-muted: #656a73; /* secondary text */
+  --color-faint: #99a0ab;
+  --color-line: #e7e8ec; /* hairline borders */
+  --color-line-strong: #d6d8de;
 
   /* brand accent — single refined red, used sparingly */
   --color-accent: #c8102e;

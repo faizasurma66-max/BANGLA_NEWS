@@ -44,7 +44,7 @@ export function hostname(url: string): string {
   }
 }
 
-/** Real brand icon for an outlet, derived from its domain (Google favicon service). */
+/** Small favicon for tiny contexts (hero strip, reader bar). */
 export function faviconUrl(url: string, size = 128): string {
   let host = url;
   try {
@@ -53,4 +53,15 @@ export function faviconUrl(url: string, size = 128): string {
     /* keep raw */
   }
   return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(host)}&sz=${size}`;
+}
+
+/** Higher-quality brand logo (best available icon) for outlet cards. */
+export function brandLogo(url: string): string {
+  let host = url;
+  try {
+    host = new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    /* keep raw */
+  }
+  return `https://icon.horse/icon/${host}`;
 }

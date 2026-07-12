@@ -1,12 +1,10 @@
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
 import { OutletLogo } from "./outlet-logo";
-import { hostname } from "@/lib/utils";
 import type { Outlet } from "@/lib/types";
 
 /**
- * Uniform square-ish logo tile. Links to /read/[slug] — that page shows a
- * fullscreen frame for embeddable sites, or redirects to the real site.
+ * Rectangular directory cell (no rounding, no gap — shares borders with
+ * neighbours via the grid container). Links to /read/[slug].
  * `shouldOpenExternal` is accepted for backwards-compat and ignored.
  */
 export function OutletCard({
@@ -19,29 +17,28 @@ export function OutletCard({
   return (
     <Link
       href={`/read/${handle}`}
-      className="group relative flex flex-col overflow-hidden rounded-tile border border-line bg-surface transition-all duration-300 hover:-translate-y-1 hover:border-accent-ring hover:shadow-[0_18px_40px_-24px_rgba(200,16,46,0.45)]"
+      className="group relative flex flex-col border-b border-r border-line bg-surface transition duration-200 hover:z-10 hover:ring-1 hover:ring-accent-ring"
     >
       {outlet.is_featured && (
-        <span className="absolute left-2.5 top-2.5 z-10 rounded-full bg-accent/95 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+        <span className="absolute left-1.5 top-1.5 z-10 rounded bg-accent px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-white">
           Top
         </span>
       )}
-      <span className="absolute right-2.5 top-2.5 z-10 grid h-7 w-7 place-items-center rounded-full bg-ink/0 text-ink/0 transition-all duration-300 group-hover:bg-accent group-hover:text-white">
-        <ArrowUpRight className="h-4 w-4" />
-      </span>
 
-      <div className="aspect-[16/10] w-full overflow-hidden border-b border-line">
+      {/* Logo panel */}
+      <div className="flex aspect-[16/10] items-center justify-center bg-white p-3">
         <OutletLogo outlet={outlet} />
       </div>
 
-      <div className="flex flex-1 flex-col px-3.5 py-3">
-        <span className="truncate text-sm font-semibold text-ink transition-colors group-hover:text-accent">
+      {/* Name */}
+      <div className="border-t border-line px-2 py-2 text-center">
+        <p className="truncate text-[12.5px] font-semibold leading-tight text-ink transition-colors group-hover:text-accent">
           {outlet.name}
-        </span>
-        {outlet.name_bn ? (
-          <span className="truncate font-bangla text-xs text-muted">{outlet.name_bn}</span>
-        ) : (
-          <span className="truncate text-xs text-faint">{hostname(outlet.url)}</span>
+        </p>
+        {outlet.name_bn && (
+          <p className="mt-0.5 truncate font-bangla text-[10.5px] leading-tight text-muted">
+            {outlet.name_bn}
+          </p>
         )}
       </div>
     </Link>

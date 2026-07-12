@@ -35,6 +35,24 @@ export function HeaderClient({
     setOpenMenu(null);
   }, [pathname]);
 
+  // Close open dropdowns on outside click or Escape.
+  useEffect(() => {
+    if (!openMenu) return;
+    const onDown = (e: PointerEvent) => {
+      if (!(e.target as HTMLElement).closest("[data-dropdown]")) setOpenMenu(null);
+    };
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpenMenu(null);
+    document.addEventListener("pointerdown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [openMenu]);
+
+  const toggleMenu = (key: "papers" | "local") =>
+    setOpenMenu((m) => (m === key ? null : key));
+
   return (
     <header
       className={cn(
@@ -56,8 +74,7 @@ export function HeaderClient({
           <Dropdown
             label="All Bangla Newspapers"
             open={openMenu === "papers"}
-            onOpen={() => setOpenMenu("papers")}
-            onClose={() => setOpenMenu((m) => (m === "papers" ? null : m))}
+            onToggle={() => toggleMenu("papers")}
           >
             <div className="grid w-[34rem] grid-cols-2 gap-1 p-2">
               {mainCategories.map((c) => (
@@ -69,8 +86,7 @@ export function HeaderClient({
           <Dropdown
             label="Local Newspaper"
             open={openMenu === "local"}
-            onOpen={() => setOpenMenu("local")}
-            onClose={() => setOpenMenu((m) => (m === "local" ? null : m))}
+            onToggle={() => toggleMenu("local")}
           >
             <div className="grid w-[30rem] grid-cols-2 gap-1 p-2">
               {divisions.map((d) => (
@@ -166,34 +182,38 @@ function NavLink({
 function Dropdown({
   label,
   open,
-  onOpen,
-  onClose,
+  onToggle,
   children,
 }: {
   label: string;
   open: boolean;
-  onOpen: () => void;
-  onClose: () => void;
+  onToggle: () => void;
   children: React.ReactNode;
 }) {
   return (
-    <div className="relative" onMouseEnter={onOpen} onMouseLeave={onClose}>
+    <div className="relative" data-dropdown>
       <button
         type="button"
-        onClick={() => (open ? onClose() : onOpen())}
+        onClick={onToggle}
+        aria-expanded={open}
         className={cn(
           "inline-flex items-center gap-1 rounded-full px-3.5 py-2 text-sm font-medium transition-colors",
           open ? "text-accent bg-band" : "text-ink-soft hover:text-ink hover:bg-band",
         )}
       >
         {label}
-        <ChevronDown className={cn("h-4 w-4 transition-transform", open && "rotate-180")} />
+        <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", open && "rotate-180")} />
       </button>
-      {open && (
-        <div className="absolute left-1/2 top-[calc(100%+8px)] -translate-x-1/2 overflow-hidden rounded-2xl border border-line bg-surface shadow-[0_24px_60px_-24px_rgba(23,19,13,0.35)]">
-          {children}
-        </div>
-      )}
+      <div
+        className={cn(
+          "absolute left-1/2 top-[calc(100%+8px)] -translate-x-1/2 origin-top overflow-hidden rounded-2xl border border-line bg-surface shadow-[0_24px_60px_-24px_rgba(23,19,13,0.3)] transition duration-200 ease-out",
+          open
+            ? "visible scale-100 opacity-100"
+            : "pointer-events-none invisible -translate-y-1 scale-95 opacity-0",
+        )}
+      >
+        {children}
+      </div>
     </div>
   );
 }

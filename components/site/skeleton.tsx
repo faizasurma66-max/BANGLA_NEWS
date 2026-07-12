@@ -2,19 +2,19 @@
 
 export function SkeletonCard() {
   return (
-    <div className="overflow-hidden rounded-tile border border-line bg-surface">
+    <div className="flex flex-col border-b border-r border-line bg-surface">
       <div className="skeleton aspect-[16/10] w-full" />
-      <div className="px-3.5 py-3">
-        <div className="skeleton h-4 w-3/4 rounded" />
-        <div className="skeleton mt-2 h-3 w-1/2 rounded" />
+      <div className="border-t border-line px-2.5 py-2.5 text-center">
+        <div className="skeleton mx-auto h-3.5 w-3/4 rounded" />
+        <div className="skeleton mx-auto mt-1.5 h-3 w-1/2 rounded" />
       </div>
     </div>
   );
 }
 
-export function SkeletonGrid({ count = 10 }: { count?: number }) {
+export function SkeletonGrid({ count = 12 }: { count?: number }) {
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5">
+    <div className="grid grid-cols-2 overflow-hidden rounded-xl border-l border-t border-line bg-surface sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
       {Array.from({ length: count }, (_, i) => (
         <SkeletonCard key={i} />
       ))}
