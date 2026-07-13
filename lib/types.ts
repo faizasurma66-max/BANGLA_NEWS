@@ -59,6 +59,8 @@ export interface Post {
   content: string;
   cover_image?: string | null;
   published: boolean;
+  featured?: boolean;
+  sort_order?: number;
   published_at?: string | null;
   created_at: string;
   updated_at: string;

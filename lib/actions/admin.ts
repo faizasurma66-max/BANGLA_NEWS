@@ -214,6 +214,42 @@ export async function deleteCategory(formData: FormData) {
   redirect("/admin/categories");
 }
 
+/** Move a top-level category up/down in the homepage order (reassigns sort_order). */
+export async function moveCategory(formData: FormData) {
+  const blocked = await ensureCanWrite();
+  if (blocked) return;
+  const slug = String(formData.get("slug") ?? "");
+  const dir = String(formData.get("dir") ?? "");
+  if (!slug || (dir !== "up" && dir !== "down")) redirect("/admin/categories");
+
+  const sb = supabaseAdmin();
+  const { data } = await sb
+    .from("categories")
+    .select("slug, sort_order, parent_slug")
+    .order("sort_order", { ascending: true });
+
+  const list = (data ?? []).filter(
+    (c: { parent_slug: string | null }) => !c.parent_slug,
+  );
+  const idx = list.findIndex((c: { slug: string }) => c.slug === slug);
+  const swap = dir === "up" ? idx - 1 : idx + 1;
+
+  if (idx >= 0 && swap >= 0 && swap < list.length) {
+    const moved = [...list];
+    const [item] = moved.splice(idx, 1);
+    moved.splice(swap, 0, item);
+    // Reassign clean sequential order (robust regardless of current values).
+    for (let i = 0; i < moved.length; i++) {
+      await sb
+        .from("categories")
+        .update({ sort_order: (i + 1) * 10 })
+        .eq("slug", moved[i].slug);
+    }
+    refreshDirectory();
+  }
+  redirect("/admin/categories");
+}
+
 /* -------------------------------------------------------------------------- */
 /* Submissions                                                                 */
 /* -------------------------------------------------------------------------- */
@@ -275,6 +311,8 @@ export async function upsertPost(
     content: formData.get("content"),
     cover_image: formData.get("cover_image") ?? "",
     published: bool(formData, "published"),
+    featured: bool(formData, "featured"),
+    sort_order: num(formData, "sort_order"),
   });
   if (!parsed.success) {
     return { error: "Please fix the errors below.", fieldErrors: collectFieldErrors(parsed.error.issues) };
@@ -291,6 +329,8 @@ export async function upsertPost(
       content: d.content,
       cover_image: d.cover_image || null,
       published: d.published,
+      featured: d.featured,
+      sort_order: d.sort_order,
       published_at: d.published ? now : null,
       updated_at: now,
     };
@@ -317,6 +357,50 @@ export async function deletePost(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   if (id) {
     await supabaseAdmin().from("posts").delete().eq("id", id);
+    revalidatePath("/", "layout");
+  }
+  redirect("/admin/posts");
+}
+
+/** Toggle whether a post is featured on the homepage grid. */
+export async function togglePostFeatured(formData: FormData) {
+  const blocked = await ensureCanWrite();
+  if (blocked) return;
+  const id = String(formData.get("id") ?? "");
+  const next = bool(formData, "next");
+  if (id) {
+    await supabaseAdmin().from("posts").update({ featured: next }).eq("id", id);
+    revalidatePath("/", "layout");
+  }
+  redirect("/admin/posts");
+}
+
+/** Move a post up/down in the homepage order (reassigns sort_order). */
+export async function movePost(formData: FormData) {
+  const blocked = await ensureCanWrite();
+  if (blocked) return;
+  const id = String(formData.get("id") ?? "");
+  const dir = String(formData.get("dir") ?? "");
+  if (!id || (dir !== "up" && dir !== "down")) redirect("/admin/posts");
+
+  const sb = supabaseAdmin();
+  const { data } = await sb
+    .from("posts")
+    .select("id, sort_order, created_at")
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: false });
+
+  const list = data ?? [];
+  const idx = list.findIndex((p: { id: string }) => p.id === id);
+  const swap = dir === "up" ? idx - 1 : idx + 1;
+
+  if (idx >= 0 && swap >= 0 && swap < list.length) {
+    const moved = [...list];
+    const [item] = moved.splice(idx, 1);
+    moved.splice(swap, 0, item);
+    for (let i = 0; i < moved.length; i++) {
+      await sb.from("posts").update({ sort_order: (i + 1) * 10 }).eq("id", moved[i].id);
+    }
     revalidatePath("/", "layout");
   }
   redirect("/admin/posts");

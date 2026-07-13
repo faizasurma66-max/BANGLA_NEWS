@@ -107,6 +107,7 @@ export async function adminListPosts(): Promise<Post[]> {
   const { data } = await supabaseAdmin()
     .from("posts")
     .select("*")
+    .order("sort_order", { ascending: true })
     .order("created_at", { ascending: false });
   return (data ?? []) as Post[];
 }

@@ -61,35 +61,47 @@ export default async function PostPage({ params }: Params) {
           </div>
         )}
 
-        <div
-          className="prose prose-neutral max-w-none
-            prose-headings:font-serif prose-headings:tracking-tight prose-headings:text-ink
-            prose-h1:text-3xl prose-h2:mt-10 prose-h2:mb-3 prose-h2:text-2xl
-            prose-h3:mt-8 prose-h3:mb-2 prose-h3:text-xl
-            prose-p:text-[17px] prose-p:leading-8 prose-p:text-ink-soft
-            prose-a:font-medium prose-a:text-accent prose-a:no-underline hover:prose-a:underline
-            prose-strong:text-ink
-            prose-blockquote:rounded-r-xl prose-blockquote:border-l-[3px] prose-blockquote:border-accent prose-blockquote:bg-band prose-blockquote:px-5 prose-blockquote:py-1 prose-blockquote:font-normal prose-blockquote:not-italic prose-blockquote:text-ink
-            prose-img:rounded-xl prose-img:border prose-img:border-line
-            prose-hr:border-line
-            prose-code:rounded prose-code:bg-band prose-code:px-1.5 prose-code:py-0.5 prose-code:text-[13px] prose-code:font-normal prose-code:before:content-[''] prose-code:after:content-['']
-            prose-pre:rounded-xl prose-pre:border prose-pre:border-line
-            prose-li:marker:text-accent prose-li:text-ink-soft"
-        >
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
-            components={{
-              table: (props) => (
-                <div className="my-6 overflow-x-auto rounded-xl border border-line">
-                  <table className="!my-0 w-full text-sm">{props.children}</table>
-                </div>
-              ),
-            }}
-          >
-            {post.content}
-          </ReactMarkdown>
-        </div>
+        {isHtmlContent(post.content) ? (
+          <div className={PROSE} dangerouslySetInnerHTML={{ __html: post.content }} />
+        ) : (
+          <div className={PROSE}>
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={{
+                table: (props) => (
+                  <div className="my-6 overflow-x-auto rounded-xl border border-line">
+                    <table className="!my-0 w-full text-sm">{props.children}</table>
+                  </div>
+                ),
+              }}
+            >
+              {post.content}
+            </ReactMarkdown>
+          </div>
+        )}
       </div>
     </article>
   );
 }
+
+/** Rich-text posts are stored as HTML; older posts may be Markdown. */
+function isHtmlContent(content: string): boolean {
+  return /<(?:h[1-6]|p|ul|ol|li|blockquote|img|figure|pre|hr|strong|em|a|div|table)[\s>/]/i.test(
+    content,
+  );
+}
+
+const PROSE =
+  "prose prose-neutral max-w-none " +
+  "prose-headings:font-serif prose-headings:tracking-tight prose-headings:text-ink " +
+  "prose-h1:text-3xl prose-h2:mt-10 prose-h2:mb-3 prose-h2:text-2xl " +
+  "prose-h3:mt-8 prose-h3:mb-2 prose-h3:text-xl " +
+  "prose-p:text-[17px] prose-p:leading-8 prose-p:text-ink-soft " +
+  "prose-a:font-medium prose-a:text-accent prose-a:no-underline hover:prose-a:underline " +
+  "prose-strong:text-ink " +
+  "prose-blockquote:rounded-r-xl prose-blockquote:border-l-[3px] prose-blockquote:border-accent prose-blockquote:bg-band prose-blockquote:px-5 prose-blockquote:py-1 prose-blockquote:font-normal prose-blockquote:not-italic prose-blockquote:text-ink " +
+  "prose-img:rounded-xl prose-img:border prose-img:border-line prose-img:mx-auto " +
+  "prose-hr:border-line " +
+  "prose-code:rounded prose-code:bg-band prose-code:px-1.5 prose-code:py-0.5 prose-code:text-[13px] prose-code:font-normal prose-code:before:content-[''] prose-code:after:content-[''] " +
+  "prose-pre:rounded-xl prose-pre:border prose-pre:border-line " +
+  "prose-li:marker:text-accent prose-li:text-ink-soft";

@@ -286,6 +286,16 @@ export async function getPost(slug: string): Promise<Post | undefined> {
   return (await getPublishedPosts()).find((p) => p.slug === slug);
 }
 
+/** Blog cards for the homepage: featured (admin-ordered) first, else latest. */
+export async function getHomePosts(limit = 6): Promise<Post[]> {
+  const posts = await getPublishedPosts();
+  const featured = posts
+    .filter((p) => p.featured)
+    .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+  const base = featured.length > 0 ? featured : posts;
+  return base.slice(0, limit);
+}
+
 /* -------------------------------------------------------------------------- */
 /* Global Settings                                                             */
 /* -------------------------------------------------------------------------- */

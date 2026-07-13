@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { Plus, Pencil, ExternalLink } from "lucide-react";
+import { Plus, Pencil, ExternalLink, ChevronUp, ChevronDown, Star } from "lucide-react";
 import { adminListPosts } from "@/lib/admin-queries";
-import { deletePost } from "@/lib/actions/admin";
+import { deletePost, movePost, togglePostFeatured } from "@/lib/actions/admin";
 import { DeleteButton } from "@/components/admin/delete-button";
 import { hasServiceRole } from "@/lib/env";
 import { formatDate } from "@/lib/utils";
@@ -16,7 +16,9 @@ export default async function PostsPage() {
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="font-serif text-2xl font-semibold text-ink">Blog Posts</h1>
-          <p className="mt-1 text-sm text-muted">{posts.length} total</p>
+          <p className="mt-1 text-sm text-muted">
+            {posts.length} total · ★ features on the homepage · ↑ ↓ sets the order
+          </p>
         </div>
         <Link
           href="/admin/posts/new"
@@ -36,14 +38,37 @@ export default async function PostsPage() {
         </p>
       ) : (
         <ul className="mt-6 divide-y divide-line rounded-2xl border border-line bg-surface">
-          {posts.map((p) => (
-            <li key={p.id} className="flex items-center justify-between gap-3 px-4 py-3">
-              <div className="min-w-0">
-                <p className="truncate font-medium text-ink">{p.title}</p>
-                <p className="truncate text-xs text-faint">
-                  /{p.slug} · {formatDate(p.created_at)}
-                </p>
+          {posts.map((p, i) => (
+            <li key={p.id} className="flex items-center justify-between gap-3 px-3 py-3 sm:px-4">
+              <div className="flex min-w-0 items-center gap-2">
+                {/* Order */}
+                <div className="flex flex-col">
+                  <MoveBtn id={p.id} dir="up" disabled={i === 0} />
+                  <MoveBtn id={p.id} dir="down" disabled={i === posts.length - 1} />
+                </div>
+                {/* Feature toggle */}
+                <form action={togglePostFeatured}>
+                  <input type="hidden" name="id" value={p.id} />
+                  <input type="hidden" name="next" value={p.featured ? "false" : "true"} />
+                  <button
+                    type="submit"
+                    title={p.featured ? "Featured on homepage — click to unfeature" : "Feature on homepage"}
+                    aria-pressed={!!p.featured}
+                    className={`grid h-7 w-7 place-items-center rounded-lg transition ${
+                      p.featured ? "bg-accent-soft text-accent" : "text-faint hover:bg-band hover:text-ink"
+                    }`}
+                  >
+                    <Star className={`h-4 w-4 ${p.featured ? "fill-current" : ""}`} />
+                  </button>
+                </form>
+                <div className="min-w-0">
+                  <p className="truncate font-medium text-ink">{p.title}</p>
+                  <p className="truncate text-xs text-faint">
+                    /{p.slug} · {formatDate(p.created_at)}
+                  </p>
+                </div>
               </div>
+
               <div className="flex shrink-0 items-center gap-1">
                 <span
                   className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
@@ -75,5 +100,30 @@ export default async function PostsPage() {
         </ul>
       )}
     </div>
+  );
+}
+
+function MoveBtn({
+  id,
+  dir,
+  disabled,
+}: {
+  id: string;
+  dir: "up" | "down";
+  disabled: boolean;
+}) {
+  return (
+    <form action={movePost}>
+      <input type="hidden" name="id" value={id} />
+      <input type="hidden" name="dir" value={dir} />
+      <button
+        type="submit"
+        disabled={disabled}
+        aria-label={dir === "up" ? "Move up" : "Move down"}
+        className="grid h-4 w-5 place-items-center rounded text-muted transition hover:bg-band hover:text-accent disabled:opacity-30"
+      >
+        {dir === "up" ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+      </button>
+    </form>
   );
 }

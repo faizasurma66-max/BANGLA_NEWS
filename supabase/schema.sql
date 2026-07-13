@@ -78,6 +78,8 @@ create table if not exists public.posts (
   content      text not null,
   cover_image  text,
   published    boolean not null default false,
+  featured     boolean not null default false,
+  sort_order   int not null default 0,
   published_at timestamptz,
   created_at   timestamptz not null default now(),
   updated_at   timestamptz not null default now()
@@ -126,6 +128,14 @@ insert into storage.buckets (id, name, public)
 values ('logos', 'logos', true)
 on conflict (id) do nothing;
 
+insert into storage.buckets (id, name, public)
+values ('media', 'media', true)
+on conflict (id) do nothing;
+
 drop policy if exists "public read logos" on storage.objects;
 create policy "public read logos" on storage.objects
   for select using (bucket_id = 'logos');
+
+drop policy if exists "public read media" on storage.objects;
+create policy "public read media" on storage.objects
+  for select using (bucket_id = 'media');

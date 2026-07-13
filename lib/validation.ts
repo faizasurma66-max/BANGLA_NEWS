@@ -56,6 +56,8 @@ export const postInput = z.object({
   content: z.string().trim().min(1, "Content is required"),
   cover_image: z.string().trim().max(600).optional().default(""),
   published: z.boolean().default(false),
+  featured: z.boolean().default(false),
+  sort_order: z.number().int().min(0).max(99999).default(0),
 });
 
 export type SubmissionInput = z.infer<typeof submissionInput>;
