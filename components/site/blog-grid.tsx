@@ -1,15 +1,9 @@
-"use client";
-
-import { useState } from "react";
 import { Newspaper } from "lucide-react";
 import { BlogCard } from "@/components/site/blog-card";
-import { BlogModal } from "@/components/site/blog-modal";
 import type { Post } from "@/lib/types";
 
-/** Client wrapper that manages which blog post is open in the modal. */
+/** Grid of blog cards. Each card links to its full article page. */
 export function BlogGrid({ posts }: { posts: Post[] }) {
-  const [activePost, setActivePost] = useState<Post | null>(null);
-
   if (posts.length === 0) {
     return (
       <div className="mx-auto max-w-md rounded-2xl border border-dashed border-line bg-surface px-6 py-16 text-center">
@@ -25,21 +19,10 @@ export function BlogGrid({ posts }: { posts: Post[] }) {
   }
 
   return (
-    <>
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {posts.map((post, i) => (
-          <BlogCard
-            key={post.id}
-            post={post}
-            index={i}
-            onClick={() => setActivePost(post)}
-          />
-        ))}
-      </div>
-
-      {activePost && (
-        <BlogModal post={activePost} onClose={() => setActivePost(null)} />
-      )}
-    </>
+    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {posts.map((post) => (
+        <BlogCard key={post.id} post={post} />
+      ))}
+    </div>
   );
 }

@@ -15,6 +15,7 @@ values
   ('stock-market','Stock Market News','শেয়ার বাজার সংবাদ','Stock market and business news sources covering the Dhaka and Chittagong exchanges, listed companies and the wider economy.','outlet_grid',null,'stock',80,true,null,true),
   ('assam-newspapers','Best Assam Newspapers','আসামের সেরা সংবাদপত্র','Assam, India is home to many Bengali-speaking readers. These well-known Assamese newspapers have a long history and wide readership.','outlet_grid',null,'assam',90,true,null,true),
   ('epaper','Bangla ePaper Editions','বাংলা ই-পেপার','Digital replica ePaper editions of the major Bangla dailies — read the printed paper online, page by page.','outlet_grid',null,'epaper',100,true,null,true),
+  ('international-newspapers','International Newspapers','আন্তর্জাতিক সংবাদপত্র','Major international newspapers and global news sources in one place.','outlet_grid',null,'international',95,false,null,true),
   ('dhaka-division','Dhaka Division','ঢাকা বিভাগ',null,'outlet_grid','local-newspaper','regional',1,false,'#E8A100',true),
   ('mymensingh-division','Mymensingh Division','ময়মনসিংহ বিভাগ',null,'outlet_grid','local-newspaper','regional',2,false,'#E86FB0',true),
   ('sylhet-division','Sylhet Division','সিলেট বিভাগ',null,'outlet_grid','local-newspaper','regional',3,false,'#DB4A24',true),

@@ -24,6 +24,7 @@ export const GROUPS = {
   jobs: "Job Portals",
   government: "Government Portals",
   assam: "Assam Newspapers",
+  international: "International Newspapers",
   regional: "Local Newspapers",
 } as const;
 
@@ -35,6 +36,7 @@ export const PRIMARY_NAV = [
   { label: "Bangla Converter", href: "/converter" },
   { label: "Blog", href: "/blog" },
   { label: "Bangla ePaper", href: "/epaper" },
+  { label: "International Newspaper", href: "/category/international-newspapers" },
 ] as const;
 
 /** Groups surfaced inside the "All Bangla Newspapers" mega-menu. */

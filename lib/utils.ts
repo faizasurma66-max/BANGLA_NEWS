@@ -36,6 +36,17 @@ export function formatDate(input?: string | null): string {
   });
 }
 
+/**
+ * Rich-text posts are stored as HTML (from the TipTap editor); older posts may
+ * be Markdown. Detects a leading block-level HTML tag so we know to render the
+ * content as raw HTML instead of piping it through the Markdown renderer.
+ */
+export function isHtmlContent(content: string): boolean {
+  return /<(?:h[1-6]|p|ul|ol|li|blockquote|img|figure|pre|hr|strong|em|a|div|table)[\s>/]/i.test(
+    content,
+  );
+}
+
 export function hostname(url: string): string {
   try {
     return new URL(url).hostname.replace(/^www\./, "");

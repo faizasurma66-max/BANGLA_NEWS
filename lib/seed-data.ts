@@ -141,6 +141,17 @@ export const CATEGORIES: Category[] = [
     sort_order: 100,
     home: true,
   },
+  {
+    slug: "international-newspapers",
+    title: "International Newspapers",
+    title_bn: "আন্তর্জাতিক সংবাদপত্র",
+    description:
+      "Major international newspapers and global news sources in one place.",
+    section_type: "outlet_grid",
+    group: "international",
+    sort_order: 95,
+    home: false,
+  },
 
   // Divisions (children of local-newspaper)
   { slug: "dhaka-division", title: "Dhaka Division", title_bn: "ঢাকা বিভাগ", section_type: "outlet_grid", group: "regional", parent_slug: "local-newspaper", sort_order: 1, accent: "#E8A100" },

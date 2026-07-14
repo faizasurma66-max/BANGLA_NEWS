@@ -1,26 +1,15 @@
-"use client";
-
+import Link from "next/link";
 import Image from "next/image";
-import { Newspaper, Calendar } from "lucide-react";
+import { Newspaper, Calendar, Eye } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import type { Post } from "@/lib/types";
 
-/** Premium blog card — clicking opens the blog modal instead of navigating. */
-export function BlogCard({
-  post,
-  index = 0,
-  onClick,
-}: {
-  post: Post;
-  index?: number;
-  onClick: () => void;
-}) {
+/** Premium blog card — links to the full article page at /blog/[slug]. */
+export function BlogCard({ post }: { post: Post }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="animate-card-in group flex w-full flex-col overflow-hidden rounded-2xl border border-line bg-surface text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_44px_-26px_rgba(23,19,13,0.4)]"
-      style={{ animationDelay: `${index * 80}ms` }}
+    <Link
+      href={`/blog/${post.slug}`}
+      className="group flex w-full flex-col overflow-hidden rounded-2xl border border-line bg-surface text-left transition-colors duration-200 hover:border-accent-ring"
     >
       <div className="relative aspect-[16/9] w-full overflow-hidden bg-band">
         {post.cover_image ? (
@@ -36,14 +25,20 @@ export function BlogCard({
             <Newspaper className="h-8 w-8" />
           </div>
         )}
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
       </div>
 
       <div className="flex flex-1 flex-col p-5">
-        <div className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-faint">
-          <Calendar className="h-3 w-3" />
-          {formatDate(post.published_at ?? post.created_at)}
+        <div className="flex items-center gap-3 text-xs font-medium uppercase tracking-wide text-faint">
+          <span className="inline-flex items-center gap-1.5">
+            <Calendar className="h-3 w-3" />
+            {formatDate(post.published_at ?? post.created_at)}
+          </span>
+          {(post.click_count ?? 0) > 0 && (
+            <span className="inline-flex items-center gap-1">
+              <Eye className="h-3 w-3" />
+              {post.click_count}
+            </span>
+          )}
         </div>
         <h3 className="mt-2.5 font-serif text-lg font-semibold leading-snug text-ink transition-colors group-hover:text-accent">
           {post.title}
@@ -68,6 +63,6 @@ export function BlogCard({
           </span>
         </div>
       </div>
-    </button>
+    </Link>
   );
 }

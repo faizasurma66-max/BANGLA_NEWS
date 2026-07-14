@@ -2,8 +2,9 @@
 
 import { useActionState, useState } from "react";
 import { upsertPost, type FormState } from "@/lib/actions/admin";
-import { Field, TextArea, Checkbox, SubmitBar, ErrorBanner } from "./form-kit";
+import { TextArea, Checkbox, SubmitBar, ErrorBanner } from "./form-kit";
 import { RichEditor } from "./rich-editor";
+import { CoverImageField } from "./cover-image-field";
 import { slugify } from "@/lib/seed-data";
 import type { Post } from "@/lib/types";
 
@@ -73,7 +74,7 @@ export function PostForm({ post }: { post: Post | null }) {
         </div>
 
         <div className="sm:col-span-2">
-          <Field label="Cover image URL" name="cover_image" defaultValue={post?.cover_image} error={fe.cover_image} placeholder="https://…/cover.jpg" />
+          <CoverImageField defaultValue={post?.cover_image} error={fe.cover_image} />
         </div>
 
         <div className="sm:col-span-2">

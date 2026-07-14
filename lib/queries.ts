@@ -296,6 +296,52 @@ export async function getHomePosts(limit = 6): Promise<Post[]> {
   return base.slice(0, limit);
 }
 
+/** Newest published posts (fetchPosts already orders by published_at desc). */
+export async function getRecentPosts(
+  limit = 5,
+  excludeSlug?: string,
+): Promise<Post[]> {
+  const posts = await getPublishedPosts();
+  return posts.filter((p) => p.slug !== excludeSlug).slice(0, limit);
+}
+
+/** Most-viewed published posts — popularity is the click_count set by the beacon. */
+export async function getPopularPosts(
+  limit = 5,
+  excludeSlug?: string,
+): Promise<Post[]> {
+  const posts = await getPublishedPosts();
+  return [...posts]
+    .filter((p) => p.slug !== excludeSlug)
+    .sort((a, b) => (b.click_count ?? 0) - (a.click_count ?? 0))
+    .slice(0, limit);
+}
+
+export type CategoryCount = {
+  slug: string;
+  title: string;
+  title_bn?: string | null;
+  count: number;
+};
+
+/** Main (non-division) categories with active-outlet counts, for the blog sidebar. */
+export async function getCategoriesWithCounts(): Promise<CategoryCount[]> {
+  const [cats, outlets] = await Promise.all([getAllCategories(), getAllOutlets()]);
+  const counts = new Map<string, number>();
+  for (const o of outlets) {
+    counts.set(o.category_slug, (counts.get(o.category_slug) ?? 0) + 1);
+  }
+  return cats
+    .filter((c) => !c.parent_slug && c.slug !== "local-newspaper")
+    .sort((a, b) => a.sort_order - b.sort_order)
+    .map((c) => ({
+      slug: c.slug,
+      title: c.title,
+      title_bn: c.title_bn,
+      count: counts.get(c.slug) ?? 0,
+    }));
+}
+
 /* -------------------------------------------------------------------------- */
 /* Global Settings                                                             */
 /* -------------------------------------------------------------------------- */

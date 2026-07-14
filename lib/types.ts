@@ -61,6 +61,8 @@ export interface Post {
   published: boolean;
   featured?: boolean;
   sort_order?: number;
+  /** View count — drives the "Popular posts" ranking. */
+  click_count?: number;
   published_at?: string | null;
   created_at: string;
   updated_at: string;

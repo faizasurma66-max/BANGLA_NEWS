@@ -130,23 +130,6 @@ body {
   border-radius: var(--radius-tile);
 }
 
-/* ---------- Lazy-section entrance ----------------------------------------- */
-
-@keyframes fadeSlideUp {
-  from {
-    opacity: 0;
-    transform: translateY(24px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-slide-up {
-  animation: fadeSlideUp 0.5s var(--ease-out-soft) forwards;
-}
-
 /* ---------- macOS window chrome ------------------------------------------- */
 
 .mac-window {
@@ -244,23 +227,6 @@ body {
 .blog-carousel > * {
   scroll-snap-align: start;
   flex-shrink: 0;
-}
-
-/* Staggered entrance for cards */
-@keyframes cardIn {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-card-in {
-  opacity: 0;
-  animation: cardIn 0.4s var(--ease-out-soft) forwards;
 }
 
 /* ---------- TipTap rich-text editor --------------------------------------- */
