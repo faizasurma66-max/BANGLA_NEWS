@@ -8,9 +8,11 @@ import type { AdminOutlet } from "@/lib/admin-queries";
 export function OutletForm({
   outlet,
   categories,
+  defaultCategory = "",
 }: {
   outlet: AdminOutlet | null;
   categories: { slug: string; title: string }[];
+  defaultCategory?: string;
 }) {
   const [state, action, pending] = useActionState<FormState, FormData>(upsertOutlet, {});
   const fe = state.fieldErrors ?? {};
@@ -30,14 +32,21 @@ export function OutletForm({
           label="Category"
           name="category_slug"
           required
-          defaultValue={outlet?.category_slug ?? ""}
+          defaultValue={outlet?.category_slug ?? defaultCategory ?? ""}
           error={fe.category_slug}
           options={[
             { value: "", label: "— Choose category —" },
             ...categories.map((c) => ({ value: c.slug, label: c.title })),
           ]}
         />
-        <Field label="Sort order" name="sort_order" type="number" defaultValue={outlet?.sort_order ?? 0} error={fe.sort_order} />
+        <Field
+          label="Sort order"
+          name="sort_order"
+          type="number"
+          defaultValue={outlet?.sort_order ?? ""}
+          error={fe.sort_order}
+          hint={outlet ? undefined : "Leave blank to add at the end of the category."}
+        />
 
         <div className="sm:col-span-2">
           <Field label="Logo URL" name="logo_url" defaultValue={outlet?.logo_url} error={fe.logo_url} hint="Paste a logo URL, or upload a file below (upload wins)." placeholder="https://…/logo.png" />

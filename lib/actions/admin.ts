@@ -101,6 +101,22 @@ export async function upsertOutlet(
     const uploaded = await uploadLogoIfPresent(formData);
     const logo_url = uploaded ?? (data.logo_url || null);
 
+    const id = String(formData.get("id") ?? "");
+
+    // New outlet with no explicit order → append to the end of its category so
+    // it lands predictably instead of colliding at sort_order 0.
+    let sortOrder = data.sort_order;
+    if (!id && !sortOrder) {
+      const { data: last } = await sb
+        .from("outlets")
+        .select("sort_order")
+        .eq("category_id", cat.id)
+        .order("sort_order", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      sortOrder = (last?.sort_order ?? 0) + 10;
+    }
+
     const row = {
       category_id: cat.id,
       name: data.name,
@@ -111,10 +127,9 @@ export async function upsertOutlet(
       is_featured: data.is_featured,
       is_active: data.is_active,
       open_external: data.open_external,
-      sort_order: data.sort_order,
+      sort_order: sortOrder,
     };
 
-    const id = String(formData.get("id") ?? "");
     if (id) {
       const { error } = await sb.from("outlets").update(row).eq("id", id);
       if (error) throw error;
@@ -128,6 +143,46 @@ export async function upsertOutlet(
   }
 
   refreshDirectory();
+  redirect("/admin/outlets");
+}
+
+/** Move an outlet up/down within its own category (reassigns sort_order). */
+export async function moveOutlet(formData: FormData) {
+  const blocked = await ensureCanWrite();
+  if (blocked) return;
+  const id = String(formData.get("id") ?? "");
+  const dir = String(formData.get("dir") ?? "");
+  if (!id || (dir !== "up" && dir !== "down")) redirect("/admin/outlets");
+
+  const sb = supabaseAdmin();
+  const { data: cur } = await sb
+    .from("outlets")
+    .select("id, category_id")
+    .eq("id", id)
+    .single();
+  if (!cur) redirect("/admin/outlets");
+
+  const { data } = await sb
+    .from("outlets")
+    .select("id, sort_order")
+    .eq("category_id", cur.category_id)
+    .order("sort_order", { ascending: true });
+
+  const list = data ?? [];
+  const idx = list.findIndex((o: { id: string }) => o.id === id);
+  const swap = dir === "up" ? idx - 1 : idx + 1;
+
+  if (idx >= 0 && swap >= 0 && swap < list.length) {
+    const moved = [...list];
+    const [item] = moved.splice(idx, 1);
+    moved.splice(swap, 0, item);
+    await Promise.all(
+      moved.map((o, i) =>
+        sb.from("outlets").update({ sort_order: (i + 1) * 10 }).eq("id", o.id),
+      ),
+    );
+    refreshDirectory();
+  }
   redirect("/admin/outlets");
 }
 
@@ -239,12 +294,12 @@ export async function moveCategory(formData: FormData) {
     const [item] = moved.splice(idx, 1);
     moved.splice(swap, 0, item);
     // Reassign clean sequential order (robust regardless of current values).
-    for (let i = 0; i < moved.length; i++) {
-      await sb
-        .from("categories")
-        .update({ sort_order: (i + 1) * 10 })
-        .eq("slug", moved[i].slug);
-    }
+    // Run the updates concurrently — sequential awaits to a remote DB are slow.
+    await Promise.all(
+      moved.map((c, i) =>
+        sb.from("categories").update({ sort_order: (i + 1) * 10 }).eq("slug", c.slug),
+      ),
+    );
     refreshDirectory();
   }
   redirect("/admin/categories");
@@ -398,9 +453,11 @@ export async function movePost(formData: FormData) {
     const moved = [...list];
     const [item] = moved.splice(idx, 1);
     moved.splice(swap, 0, item);
-    for (let i = 0; i < moved.length; i++) {
-      await sb.from("posts").update({ sort_order: (i + 1) * 10 }).eq("id", moved[i].id);
-    }
+    await Promise.all(
+      moved.map((p, i) =>
+        sb.from("posts").update({ sort_order: (i + 1) * 10 }).eq("id", p.id),
+      ),
+    );
     revalidatePath("/", "layout");
   }
   redirect("/admin/posts");

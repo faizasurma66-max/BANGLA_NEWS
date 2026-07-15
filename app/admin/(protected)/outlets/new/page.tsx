@@ -5,10 +5,17 @@ import { OutletForm } from "@/components/admin/outlet-form";
 
 export const dynamic = "force-dynamic";
 
-export default async function NewOutletPage() {
-  const cats = (await adminListCategories()).filter(
-    (c) => c.section_type !== "division_grid",
-  );
+export default async function NewOutletPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ category?: string }>;
+}) {
+  const [{ category }, allCats] = await Promise.all([
+    searchParams,
+    adminListCategories(),
+  ]);
+  const cats = allCats.filter((c) => c.section_type !== "division_grid");
+  const defaultCategory = cats.some((c) => c.slug === category) ? category : "";
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -17,7 +24,11 @@ export default async function NewOutletPage() {
       </Link>
       <h1 className="mt-2 font-serif text-2xl font-semibold text-ink">New outlet</h1>
       <p className="mb-6 mt-1 text-sm text-muted">Add a newspaper, portal, radio station or ePaper.</p>
-      <OutletForm outlet={null} categories={cats.map((c) => ({ slug: c.slug, title: c.title }))} />
+      <OutletForm
+        outlet={null}
+        categories={cats.map((c) => ({ slug: c.slug, title: c.title }))}
+        defaultCategory={defaultCategory}
+      />
     </div>
   );
 }
