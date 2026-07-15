@@ -321,10 +321,11 @@ export type CategoryCount = {
   slug: string;
   title: string;
   title_bn?: string | null;
+  group: GroupKey;
   count: number;
 };
 
-/** Main (non-division) categories with active-outlet counts, for the blog sidebar. */
+/** Main (non-division) categories with active-outlet counts, for shortcuts + sidebar. */
 export async function getCategoriesWithCounts(): Promise<CategoryCount[]> {
   const [cats, outlets] = await Promise.all([getAllCategories(), getAllOutlets()]);
   const counts = new Map<string, number>();
@@ -338,6 +339,7 @@ export async function getCategoriesWithCounts(): Promise<CategoryCount[]> {
       slug: c.slug,
       title: c.title,
       title_bn: c.title_bn,
+      group: c.group,
       count: counts.get(c.slug) ?? 0,
     }));
 }
