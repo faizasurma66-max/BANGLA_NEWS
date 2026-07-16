@@ -47,9 +47,9 @@ export function CategoryFilter({
           No outlets match “{q}”.
         </p>
       ) : (
-        <div className="grid grid-cols-2 overflow-hidden rounded-xl border-l border-t border-line bg-surface sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+        <div className="grid grid-cols-2 justify-center gap-3 sm:[grid-template-columns:repeat(auto-fill,217px)]">
           {filtered.map((o) => (
-            <OutletCard key={o.id} outlet={o} shouldOpenExternal={globalOpenExternal} />
+            <OutletCard key={o.id} outlet={o} compact />
           ))}
         </div>
       )}

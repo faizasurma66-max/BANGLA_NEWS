@@ -2,11 +2,10 @@
 
 export function SkeletonCard() {
   return (
-    <div className="flex flex-col border-b border-r border-line bg-surface">
-      <div className="skeleton aspect-[16/10] w-full" />
-      <div className="border-t border-line px-2.5 py-2.5 text-center">
-        <div className="skeleton mx-auto h-3.5 w-3/4 rounded" />
-        <div className="skeleton mx-auto mt-1.5 h-3 w-1/2 rounded" />
+    <div className="flex h-[110px] w-full flex-col overflow-hidden rounded-lg border border-line bg-surface sm:w-[217px]">
+      <div className="skeleton h-[90px] w-full shrink-0" />
+      <div className="flex flex-1 items-center justify-center border-t border-line px-1.5">
+        <div className="skeleton h-2.5 w-3/4 rounded" />
       </div>
     </div>
   );
@@ -14,7 +13,7 @@ export function SkeletonCard() {
 
 export function SkeletonGrid({ count = 12 }: { count?: number }) {
   return (
-    <div className="grid grid-cols-2 overflow-hidden rounded-xl border-l border-t border-line bg-surface sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+    <div className="grid grid-cols-2 justify-center gap-3 sm:[grid-template-columns:repeat(auto-fill,217px)]">
       {Array.from({ length: count }, (_, i) => (
         <SkeletonCard key={i} />
       ))}
