@@ -2,7 +2,8 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { isAdmin } from "@/lib/auth";
+import { getCurrentAdmin } from "@/lib/auth";
+import { can, type SectionKey } from "@/lib/permissions";
 import { hasServiceRole } from "@/lib/env";
 import { supabaseAdmin, LOGO_BUCKET } from "@/lib/supabase/admin";
 import { outletInput, categoryInput, postInput } from "@/lib/validation";
@@ -13,11 +14,19 @@ export type FormState = {
   fieldErrors?: Record<string, string>;
 };
 
-/** Verify admin + Supabase writes are possible. Returns an error string or null. */
-async function ensureCanWrite(): Promise<string | null> {
-  if (!(await isAdmin())) redirect("/admin/login");
+/**
+ * Guard for every write below. Server Actions are reachable by direct POST, so
+ * the permission check lives here rather than only on the page that renders the
+ * form. Returns an error string, or null when the write may proceed.
+ */
+async function ensureCanWrite(section: SectionKey): Promise<string | null> {
+  const admin = await getCurrentAdmin();
+  if (!admin) redirect("/admin/login");
+  if (!can(admin, section)) {
+    return "এই কাজটি করার অনুমতি আপনার নেই।";
+  }
   if (!hasServiceRole()) {
-    return "Supabase is not configured for writes. Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.";
+    return "Supabase রাইট কনফিগার করা নেই। NEXT_PUBLIC_SUPABASE_URL এবং SUPABASE_SERVICE_ROLE_KEY সেট করুন।";
   }
   return null;
 }
@@ -48,6 +57,17 @@ function refreshDirectory() {
   revalidatePath("/", "layout");
 }
 
+/**
+ * Where to send the admin after a list action. The outlet list is reachable
+ * from several sections (all outlets, divisions, international), so each form
+ * posts the page it came from and we return there instead of always bouncing
+ * to /admin/outlets. Only same-origin admin paths are accepted.
+ */
+function returnTo(formData: FormData, fallback: string): string {
+  const raw = String(formData.get("return_to") ?? "");
+  return raw.startsWith("/admin") ? raw : fallback;
+}
+
 /* -------------------------------------------------------------------------- */
 /* Outlets                                                                     */
 /* -------------------------------------------------------------------------- */
@@ -69,7 +89,7 @@ export async function upsertOutlet(
   _prev: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  const blocked = await ensureCanWrite();
+  const blocked = await ensureCanWrite("outlets");
   if (blocked) return { error: blocked };
 
   const parsed = outletInput.safeParse({
@@ -85,7 +105,7 @@ export async function upsertOutlet(
     sort_order: num(formData, "sort_order"),
   });
   if (!parsed.success) {
-    return { error: "Please fix the errors below.", fieldErrors: collectFieldErrors(parsed.error.issues) };
+    return { error: "নিচের ভুলগুলো ঠিক করুন।", fieldErrors: collectFieldErrors(parsed.error.issues) };
   }
   const data = parsed.data;
   const sb = supabaseAdmin();
@@ -96,7 +116,7 @@ export async function upsertOutlet(
       .select("id")
       .eq("slug", data.category_slug)
       .single();
-    if (catErr || !cat) return { error: "Selected category no longer exists." };
+    if (catErr || !cat) return { error: "নির্বাচিত ক্যাটাগরিটি আর নেই।" };
 
     const uploaded = await uploadLogoIfPresent(formData);
     const logo_url = uploaded ?? (data.logo_url || null);
@@ -139,20 +159,21 @@ export async function upsertOutlet(
     }
   } catch (e) {
     console.error("[admin] upsertOutlet failed:", e);
-    return { error: "Could not save the outlet. Check server logs." };
+    return { error: "আউটলেটটি সংরক্ষণ করা যায়নি। সার্ভার লগ দেখুন।" };
   }
 
   refreshDirectory();
-  redirect("/admin/outlets");
+  redirect(returnTo(formData, "/admin/outlets"));
 }
 
 /** Move an outlet up/down within its own category (reassigns sort_order). */
 export async function moveOutlet(formData: FormData) {
-  const blocked = await ensureCanWrite();
+  const blocked = await ensureCanWrite("outlets");
   if (blocked) return;
+  const back = returnTo(formData, "/admin/outlets");
   const id = String(formData.get("id") ?? "");
   const dir = String(formData.get("dir") ?? "");
-  if (!id || (dir !== "up" && dir !== "down")) redirect("/admin/outlets");
+  if (!id || (dir !== "up" && dir !== "down")) redirect(back);
 
   const sb = supabaseAdmin();
   const { data: cur } = await sb
@@ -160,7 +181,7 @@ export async function moveOutlet(formData: FormData) {
     .select("id, category_id")
     .eq("id", id)
     .single();
-  if (!cur) redirect("/admin/outlets");
+  if (!cur) redirect(back);
 
   const { data } = await sb
     .from("outlets")
@@ -183,18 +204,18 @@ export async function moveOutlet(formData: FormData) {
     );
     refreshDirectory();
   }
-  redirect("/admin/outlets");
+  redirect(back);
 }
 
 export async function deleteOutlet(formData: FormData) {
-  const blocked = await ensureCanWrite();
+  const blocked = await ensureCanWrite("outlets");
   if (blocked) return;
   const id = String(formData.get("id") ?? "");
   if (id) {
     await supabaseAdmin().from("outlets").delete().eq("id", id);
     refreshDirectory();
   }
-  redirect("/admin/outlets");
+  redirect(returnTo(formData, "/admin/outlets"));
 }
 
 /* -------------------------------------------------------------------------- */
@@ -205,7 +226,7 @@ export async function upsertCategory(
   _prev: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  const blocked = await ensureCanWrite();
+  const blocked = await ensureCanWrite("categories");
   if (blocked) return { error: blocked };
 
   const parsed = categoryInput.safeParse({
@@ -222,7 +243,7 @@ export async function upsertCategory(
     is_active: bool(formData, "is_active"),
   });
   if (!parsed.success) {
-    return { error: "Please fix the errors below.", fieldErrors: collectFieldErrors(parsed.error.issues) };
+    return { error: "নিচের ভুলগুলো ঠিক করুন।", fieldErrors: collectFieldErrors(parsed.error.issues) };
   }
   const d = parsed.data;
 
@@ -251,7 +272,7 @@ export async function upsertCategory(
     }
   } catch (e) {
     console.error("[admin] upsertCategory failed:", e);
-    return { error: "Could not save the category (slug may already exist)." };
+    return { error: "ক্যাটাগরিটি সংরক্ষণ করা যায়নি (slug হয়তো আগে থেকেই আছে)।" };
   }
 
   refreshDirectory();
@@ -259,7 +280,7 @@ export async function upsertCategory(
 }
 
 export async function deleteCategory(formData: FormData) {
-  const blocked = await ensureCanWrite();
+  const blocked = await ensureCanWrite("categories");
   if (blocked) return;
   const slug = String(formData.get("slug") ?? "");
   if (slug) {
@@ -271,7 +292,7 @@ export async function deleteCategory(formData: FormData) {
 
 /** Move a top-level category up/down in the homepage order (reassigns sort_order). */
 export async function moveCategory(formData: FormData) {
-  const blocked = await ensureCanWrite();
+  const blocked = await ensureCanWrite("categories");
   if (blocked) return;
   const slug = String(formData.get("slug") ?? "");
   const dir = String(formData.get("dir") ?? "");
@@ -310,7 +331,7 @@ export async function moveCategory(formData: FormData) {
 /* -------------------------------------------------------------------------- */
 
 export async function approveSubmission(formData: FormData) {
-  const blocked = await ensureCanWrite();
+  const blocked = await ensureCanWrite("submissions");
   if (blocked) return;
 
   const id = String(formData.get("id") ?? "");
@@ -339,7 +360,7 @@ export async function approveSubmission(formData: FormData) {
 }
 
 export async function rejectSubmission(formData: FormData) {
-  const blocked = await ensureCanWrite();
+  const blocked = await ensureCanWrite("submissions");
   if (blocked) return;
   const id = String(formData.get("id") ?? "");
   if (id) {
@@ -356,7 +377,7 @@ export async function upsertPost(
   _prev: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  const blocked = await ensureCanWrite();
+  const blocked = await ensureCanWrite("posts");
   if (blocked) return { error: blocked };
 
   const parsed = postInput.safeParse({
@@ -370,7 +391,7 @@ export async function upsertPost(
     sort_order: num(formData, "sort_order"),
   });
   if (!parsed.success) {
-    return { error: "Please fix the errors below.", fieldErrors: collectFieldErrors(parsed.error.issues) };
+    return { error: "নিচের ভুলগুলো ঠিক করুন।", fieldErrors: collectFieldErrors(parsed.error.issues) };
   }
   const d = parsed.data;
 
@@ -399,7 +420,7 @@ export async function upsertPost(
     }
   } catch (e) {
     console.error("[admin] upsertPost failed:", e);
-    return { error: "Could not save the post (slug may already exist)." };
+    return { error: "পোস্টটি সংরক্ষণ করা যায়নি (slug হয়তো আগে থেকেই আছে)।" };
   }
 
   revalidatePath("/", "layout");
@@ -407,7 +428,7 @@ export async function upsertPost(
 }
 
 export async function deletePost(formData: FormData) {
-  const blocked = await ensureCanWrite();
+  const blocked = await ensureCanWrite("posts");
   if (blocked) return;
   const id = String(formData.get("id") ?? "");
   if (id) {
@@ -419,7 +440,7 @@ export async function deletePost(formData: FormData) {
 
 /** Toggle whether a post is featured on the homepage grid. */
 export async function togglePostFeatured(formData: FormData) {
-  const blocked = await ensureCanWrite();
+  const blocked = await ensureCanWrite("posts");
   if (blocked) return;
   const id = String(formData.get("id") ?? "");
   const next = bool(formData, "next");
@@ -432,7 +453,7 @@ export async function togglePostFeatured(formData: FormData) {
 
 /** Move a post up/down in the homepage order (reassigns sort_order). */
 export async function movePost(formData: FormData) {
-  const blocked = await ensureCanWrite();
+  const blocked = await ensureCanWrite("posts");
   if (blocked) return;
   const id = String(formData.get("id") ?? "");
   const dir = String(formData.get("dir") ?? "");
@@ -468,7 +489,7 @@ export async function movePost(formData: FormData) {
 /* -------------------------------------------------------------------------- */
 
 export async function updateGlobalSetting(formData: FormData) {
-  const blocked = await ensureCanWrite();
+  const blocked = await ensureCanWrite("settings");
   if (blocked) return;
   const key = String(formData.get("key") ?? "");
   const value = String(formData.get("value") ?? "");

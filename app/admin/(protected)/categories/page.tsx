@@ -1,121 +1,169 @@
 import Link from "next/link";
-import { Plus, Pencil, ChevronUp, ChevronDown } from "lucide-react";
-import { adminListCategories } from "@/lib/admin-queries";
+import { Plus, Pencil, FolderTree, Home, LayoutGrid, MapPinned } from "lucide-react";
+import { adminListCategories, adminOutletCounts } from "@/lib/admin-queries";
 import { deleteCategory, moveCategory } from "@/lib/actions/admin";
 import { DeleteButton } from "@/components/admin/delete-button";
+import { ReorderCell } from "@/components/admin/reorder";
+import { requireSection } from "@/lib/auth";
 import { hasServiceRole } from "@/lib/env";
 import { GROUPS } from "@/lib/site-config";
+import { bnNum } from "@/lib/utils";
+import {
+  Alert,
+  Badge,
+  EmptyState,
+  PageHeader,
+  TableShell,
+  Td,
+  Th,
+  Tr,
+  btn,
+} from "@/components/admin/ui";
 
 export const dynamic = "force-dynamic";
 
 export default async function CategoriesPage() {
-  const categories = await adminListCategories();
+  await requireSection("categories");
+
+  const [categories, counts] = await Promise.all([
+    adminListCategories(),
+    adminOutletCounts(),
+  ]);
+
   const topLevel = categories.filter((c) => !c.parent_slug);
   const orderIndex = new Map(topLevel.map((c, i) => [c.slug, i]));
+  const homeCount = categories.filter((c) => c.home).length;
 
   return (
-    <div className="mx-auto max-w-5xl">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="font-serif text-2xl font-semibold text-ink">Categories</h1>
-          <p className="mt-1 text-sm text-muted">
-            {categories.length} total · use ↑ ↓ to set homepage order
-          </p>
-        </div>
-        <Link
-          href="/admin/categories/new"
-          className="inline-flex items-center gap-1.5 rounded-full bg-accent px-4 py-2.5 text-sm font-semibold text-white hover:bg-accent-dark"
-        >
-          <Plus className="h-4 w-4" /> New category
-        </Link>
-      </div>
+    <div className="mx-auto max-w-6xl">
+      <PageHeader
+        eyebrow="ডিরেক্টরি"
+        title="ক্যাটাগরি"
+        description={
+          <>
+            মোট {bnNum(categories.length)} টি ক্যাটাগরি, {bnNum(homeCount)} টি হোমপেজে দেখানো
+            হচ্ছে। ↑ ↓ দিয়ে হোমপেজে কোনটি আগে আসবে তা ঠিক করুন।
+          </>
+        }
+        actions={
+          <Link href="/admin/categories/new" className={btn.primary}>
+            <Plus className="h-4 w-4" /> নতুন ক্যাটাগরি
+          </Link>
+        }
+      />
 
       {!hasServiceRole() ? (
-        <div className="mt-8 rounded-xl border border-amber-300 bg-amber-50 px-4 py-6 text-sm text-amber-900">
-          Connect Supabase to manage categories.
-        </div>
+        <Alert tone="warn" title="Supabase যুক্ত করুন">
+          ক্যাটাগরি পরিচালনা করতে Supabase সংযোগ প্রয়োজন।
+        </Alert>
+      ) : categories.length === 0 ? (
+        <EmptyState
+          icon={FolderTree}
+          title="কোনো ক্যাটাগরি নেই"
+          description="ডিরেক্টরির প্রথম সেকশনটি তৈরি করুন।"
+          action={
+            <Link href="/admin/categories/new" className={btn.primary}>
+              <Plus className="h-4 w-4" /> নতুন ক্যাটাগরি
+            </Link>
+          }
+        />
       ) : (
-        <div className="mt-6 overflow-x-auto rounded-2xl border border-line bg-surface">
-          <table className="w-full text-sm">
+        <TableShell>
+          <table className="w-full min-w-[760px] border-collapse">
             <thead>
-              <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-faint">
-                <th className="px-4 py-3 font-semibold">Order</th>
-                <th className="px-4 py-3 font-semibold">Title</th>
-                <th className="px-4 py-3 font-semibold">Group</th>
-                <th className="px-4 py-3 font-semibold">Home</th>
-                <th className="px-4 py-3 text-right font-semibold">Actions</th>
+              <tr>
+                <Th align="center" className="w-20">ক্রম</Th>
+                <Th align="left">শিরোনাম</Th>
+                <Th align="left" className="w-52">গ্রুপ</Th>
+                <Th align="center" className="w-24">সাইট</Th>
+                <Th align="left" className="w-32">হোমপেজ</Th>
+                <Th align="right" className="w-40">অ্যাকশন</Th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-line">
+            <tbody>
               {categories.map((c) => {
                 const pos = orderIndex.get(c.slug);
                 const isTop = pos !== undefined;
+                const isDivision = c.section_type === "division_grid";
                 return (
-                  <tr key={c.slug} className="hover:bg-band/50">
-                    <td className="px-4 py-3">
+                  <Tr key={c.slug}>
+                    <Td align="center">
                       {isTop ? (
-                        <div className="flex items-center gap-1.5">
-                          <span className="w-5 text-xs font-semibold tabular-nums text-faint">
-                            {pos + 1}
+                        <div className="flex items-center justify-center gap-1.5">
+                          <span className="w-5 text-xs font-bold text-a-faint">
+                            {bnNum(pos + 1)}
                           </span>
-                          <div className="flex flex-col">
-                            <MoveBtn slug={c.slug} dir="up" disabled={pos === 0} />
-                            <MoveBtn slug={c.slug} dir="down" disabled={pos === topLevel.length - 1} />
-                          </div>
+                          <ReorderCell
+                            action={moveCategory}
+                            hidden={{ slug: c.slug }}
+                            first={pos === 0}
+                            last={pos === topLevel.length - 1}
+                          />
                         </div>
                       ) : (
-                        <span className="text-xs text-faint">—</span>
+                        <span className="text-xs text-a-faint">—</span>
                       )}
-                    </td>
-                    <td className="px-4 py-3">
-                      <p className="font-medium text-ink">{c.title}</p>
-                      <p className="text-xs text-faint">/{c.slug}</p>
-                    </td>
-                    <td className="px-4 py-3 text-muted">{GROUPS[c.group] ?? c.group}</td>
-                    <td className="px-4 py-3 text-muted">{c.home ? "Yes" : "—"}</td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center justify-end gap-1">
+                    </Td>
+                    <Td>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="grid h-7 w-7 shrink-0 place-items-center rounded-[8px] text-white"
+                          style={{ background: c.accent || "var(--color-a-faint)" }}
+                        >
+                          {isDivision ? (
+                            <MapPinned className="h-3.5 w-3.5" />
+                          ) : (
+                            <LayoutGrid className="h-3.5 w-3.5" />
+                          )}
+                        </span>
+                        <span className="min-w-0">
+                          <span className="block truncate font-semibold text-a-ink">
+                            {c.title}
+                          </span>
+                          <span className="block truncate text-xs text-a-faint" dir="ltr">
+                            /{c.slug}
+                            {c.parent_slug ? ` · ${c.parent_slug}` : ""}
+                          </span>
+                        </span>
+                      </div>
+                    </Td>
+                    <Td className="text-a-muted">{GROUPS[c.group] ?? c.group}</Td>
+                    <Td align="center" className="font-semibold text-a-ink">
+                      {bnNum(counts[c.slug] ?? 0)}
+                    </Td>
+                    <Td>
+                      {c.home ? (
+                        <Badge tone="ok">
+                          <Home className="h-3 w-3" /> দেখানো হচ্ছে
+                        </Badge>
+                      ) : (
+                        <span className="text-xs text-a-faint">—</span>
+                      )}
+                    </Td>
+                    <Td align="right">
+                      <div className="admin-row-actions flex items-center justify-end gap-0.5">
                         <Link
                           href={`/admin/categories/${c.slug}`}
-                          className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium text-ink-soft hover:bg-band"
+                          className="inline-flex items-center gap-1.5 rounded-[9px] px-2.5 py-1.5 text-xs font-semibold text-a-ink-soft transition hover:bg-a-sunken"
                         >
-                          <Pencil className="h-3.5 w-3.5" /> Edit
+                          <Pencil className="h-3.5 w-3.5" /> সম্পাদনা
                         </Link>
-                        <DeleteButton action={deleteCategory} hidden={{ slug: c.slug }} confirmText={`Delete “${c.title}”? Outlets in it may be affected.`} />
+                        <DeleteButton
+                          action={deleteCategory}
+                          hidden={{ slug: c.slug }}
+                          confirmText={`“${c.title}” মুছে ফেলবেন? এই ক্যাটাগরির ${bnNum(
+                            counts[c.slug] ?? 0,
+                          )} টি সাইটও একসাথে মুছে যাবে।`}
+                        />
                       </div>
-                    </td>
-                  </tr>
+                    </Td>
+                  </Tr>
                 );
               })}
             </tbody>
           </table>
-        </div>
+        </TableShell>
       )}
     </div>
-  );
-}
-
-function MoveBtn({
-  slug,
-  dir,
-  disabled,
-}: {
-  slug: string;
-  dir: "up" | "down";
-  disabled: boolean;
-}) {
-  return (
-    <form action={moveCategory}>
-      <input type="hidden" name="slug" value={slug} />
-      <input type="hidden" name="dir" value={dir} />
-      <button
-        type="submit"
-        disabled={disabled}
-        aria-label={dir === "up" ? "Move up" : "Move down"}
-        className="grid h-4 w-5 place-items-center rounded text-muted transition hover:bg-band hover:text-accent disabled:opacity-30"
-      >
-        {dir === "up" ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-      </button>
-    </form>
   );
 }

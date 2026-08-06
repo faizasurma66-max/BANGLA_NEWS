@@ -8,7 +8,52 @@ const slugRule = z
   .regex(/^[a-z0-9-]+$/, "Use lowercase letters, numbers and hyphens only");
 
 export const loginInput = z.object({
-  password: z.string().min(1, "Password is required"),
+  username: z.string().trim().min(1, "ইউজারনেম দিন").max(80),
+  password: z.string().min(1, "পাসওয়ার্ড দিন"),
+});
+
+/** Usernames are the login handle, so keep them tight and predictable. */
+const usernameRule = z
+  .string()
+  .trim()
+  .min(3, "ইউজারনেম কমপক্ষে ৩ অক্ষরের হতে হবে")
+  .max(40)
+  .regex(/^[a-zA-Z0-9._-]+$/, "শুধু ইংরেজি অক্ষর, সংখ্যা এবং . _ - ব্যবহার করুন");
+
+const optionalEmail = z
+  .union([z.literal(""), z.email("সঠিক ইমেইল ঠিকানা দিন").max(160)])
+  .optional()
+  .default("");
+
+export const adminCreateInput = z.object({
+  username: usernameRule,
+  name: z.string().trim().max(120).optional().default(""),
+  email: optionalEmail,
+  password: z.string().min(8, "পাসওয়ার্ড কমপক্ষে ৮ অক্ষরের হতে হবে").max(200),
+  role: z.enum(["owner", "admin", "author"]),
+  is_active: z.boolean().default(true),
+});
+
+export const adminUpdateInput = z.object({
+  name: z.string().trim().max(120).optional().default(""),
+  email: optionalEmail,
+  role: z.enum(["owner", "admin", "author"]),
+  is_active: z.boolean().default(true),
+  password: z
+    .union([z.literal(""), z.string().min(8, "পাসওয়ার্ড কমপক্ষে ৮ অক্ষরের হতে হবে").max(200)])
+    .optional()
+    .default(""),
+});
+
+export const profileInput = z.object({
+  name: z.string().trim().max(120).optional().default(""),
+  email: optionalEmail,
+  current_password: z.string().optional().default(""),
+  new_password: z
+    .union([z.literal(""), z.string().min(8, "পাসওয়ার্ড কমপক্ষে ৮ অক্ষরের হতে হবে").max(200)])
+    .optional()
+    .default(""),
+  confirm_password: z.string().optional().default(""),
 });
 
 export const submissionInput = z.object({
@@ -60,7 +105,48 @@ export const postInput = z.object({
   sort_order: z.number().int().min(0).max(99999).default(0),
 });
 
+export const settingsInput = z.object({
+  site_name: z.string().trim().min(1, "ওয়েবসাইটের নাম দিন").max(120),
+  primary_color: z
+    .string()
+    .trim()
+    .regex(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/, "সঠিক হেক্স কালার দিন, যেমন #c8102e"),
+  meta_title: z.string().trim().max(200).optional().default(""),
+  meta_description: z.string().trim().max(400).optional().default(""),
+  meta_keywords: z.string().trim().max(600).optional().default(""),
+  google_analytics_id: z.string().trim().max(60).optional().default(""),
+  google_site_verification: z.string().trim().max(200).optional().default(""),
+  adsense_code: z.string().trim().max(4000).optional().default(""),
+  smtp_host: z.string().trim().max(160).optional().default(""),
+  smtp_port: z.string().trim().max(6).optional().default("587"),
+  smtp_encryption: z.enum(["tls", "ssl", "none"]).default("tls"),
+  smtp_username: z.string().trim().max(160).optional().default(""),
+  smtp_password: z.string().max(200).optional().default(""),
+  smtp_from_email: z
+    .union([z.literal(""), z.email("সঠিক ইমেইল ঠিকানা দিন").max(160)])
+    .optional()
+    .default(""),
+  smtp_from_name: z.string().trim().max(120).optional().default(""),
+  social_facebook: z.string().trim().max(400).optional().default(""),
+  social_x: z.string().trim().max(400).optional().default(""),
+  social_instagram: z.string().trim().max(400).optional().default(""),
+  social_pinterest: z.string().trim().max(400).optional().default(""),
+  social_youtube: z.string().trim().max(400).optional().default(""),
+  app_download_url: z.string().trim().max(600).optional().default(""),
+  contact_email: z
+    .union([z.literal(""), z.email("সঠিক ইমেইল ঠিকানা দিন").max(160)])
+    .optional()
+    .default(""),
+  page_about: z.string().trim().max(8000).optional().default(""),
+  page_disclaimer: z.string().trim().max(8000).optional().default(""),
+  page_privacy: z.string().trim().max(8000).optional().default(""),
+});
+
 export type SubmissionInput = z.infer<typeof submissionInput>;
+export type AdminCreateInput = z.infer<typeof adminCreateInput>;
+export type AdminUpdateInput = z.infer<typeof adminUpdateInput>;
+export type ProfileInput = z.infer<typeof profileInput>;
+export type SettingsInput = z.infer<typeof settingsInput>;
 export type OutletInput = z.infer<typeof outletInput>;
 export type CategoryInput = z.infer<typeof categoryInput>;
 export type PostInput = z.infer<typeof postInput>;
