@@ -33,7 +33,6 @@ export type GroupKey = keyof typeof GROUPS;
 /** Primary nav shown in the header (dropdowns are built from live categories). */
 export const PRIMARY_NAV = [
   { label: "Home", href: "/" },
-  { label: "Bangla Converter", href: "/converter" },
   { label: "Blog", href: "/blog" },
   { label: "Bangla ePaper", href: "/epaper" },
   { label: "International Newspaper", href: "/category/international-newspapers" },
