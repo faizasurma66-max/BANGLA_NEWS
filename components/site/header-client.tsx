@@ -14,9 +14,14 @@ type NavCat = Pick<Category, "slug" | "title" | "title_bn" | "accent">;
 export function HeaderClient({
   mainCategories,
   divisions,
+  logoSrc,
+  siteName,
 }: {
   mainCategories: NavCat[];
   divisions: NavCat[];
+  /** Branding from Settings → General. */
+  logoSrc?: string | null;
+  siteName?: string;
 }) {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
@@ -30,10 +35,14 @@ export function HeaderClient({
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  useEffect(() => {
+  // Collapse the mobile menu and any dropdown on navigation. Adjusting state
+  // during render avoids the cascading re-render an effect would cause.
+  const [lastPath, setLastPath] = useState(pathname);
+  if (lastPath !== pathname) {
+    setLastPath(pathname);
     setMobileOpen(false);
     setOpenMenu(null);
-  }, [pathname]);
+  }
 
   // Close open dropdowns on outside click or Escape.
   useEffect(() => {
@@ -61,7 +70,7 @@ export function HeaderClient({
       )}
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-        <Logo />
+        <Logo src={logoSrc} name={siteName} />
 
         {/* Desktop nav */}
         <nav className="hidden items-center gap-1 lg:flex">

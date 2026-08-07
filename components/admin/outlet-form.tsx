@@ -1,80 +1,163 @@
 "use client";
 
 import { useActionState } from "react";
+import { Globe, ImageIcon, SlidersHorizontal } from "lucide-react";
 import { upsertOutlet, type FormState } from "@/lib/actions/admin";
-import { Field, TextArea, Select, Checkbox, SubmitBar, ErrorBanner } from "./form-kit";
+import {
+  Field,
+  TextArea,
+  Select,
+  Checkbox,
+  SubmitBar,
+  ErrorBanner,
+  ImageField,
+} from "./form-kit";
+import { Card, CardDivider, FormSection } from "./ui";
 import type { AdminOutlet } from "@/lib/admin-queries";
 
 export function OutletForm({
   outlet,
   categories,
   defaultCategory = "",
+  returnTo = "/admin/outlets",
 }: {
   outlet: AdminOutlet | null;
   categories: { slug: string; title: string }[];
   defaultCategory?: string;
+  returnTo?: string;
 }) {
   const [state, action, pending] = useActionState<FormState, FormData>(upsertOutlet, {});
   const fe = state.fieldErrors ?? {};
 
   return (
-    <form action={action} className="max-w-2xl rounded-2xl border border-line bg-surface p-6 sm:p-8">
+    <form action={action}>
       <ErrorBanner message={state.error} />
       {outlet && <input type="hidden" name="id" value={outlet.id} />}
+      <input type="hidden" name="return_to" value={returnTo} />
 
-      <div className="grid gap-5 sm:grid-cols-2">
-        <Field label="Name" name="name" required defaultValue={outlet?.name} error={fe.name} placeholder="e.g. Prothom Alo" />
-        <Field label="Bangla name" name="name_bn" defaultValue={outlet?.name_bn} error={fe.name_bn} placeholder="প্রথম আলো" />
-        <div className="sm:col-span-2">
-          <Field label="Website URL" name="url" required type="url" defaultValue={outlet?.url} error={fe.url} placeholder="https://example.com" />
-        </div>
-        <Select
-          label="Category"
-          name="category_slug"
-          required
-          defaultValue={outlet?.category_slug ?? defaultCategory ?? ""}
-          error={fe.category_slug}
-          options={[
-            { value: "", label: "— Choose category —" },
-            ...categories.map((c) => ({ value: c.slug, label: c.title })),
-          ]}
-        />
-        <Field
-          label="Sort order"
-          name="sort_order"
-          type="number"
-          defaultValue={outlet?.sort_order ?? ""}
-          error={fe.sort_order}
-          hint={outlet ? undefined : "Leave blank to add at the end of the category."}
-        />
-
-        <div className="sm:col-span-2">
-          <Field label="Logo URL" name="logo_url" defaultValue={outlet?.logo_url} error={fe.logo_url} hint="Paste a logo URL, or upload a file below (upload wins)." placeholder="https://…/logo.png" />
-        </div>
-        <div className="sm:col-span-2">
-          <label htmlFor="logo_file" className="text-sm font-medium text-ink-soft">
-            Upload logo (optional)
-          </label>
-          <input
-            id="logo_file"
-            name="logo_file"
-            type="file"
-            accept="image/*"
-            className="mt-1.5 w-full rounded-xl border border-line bg-paper px-3.5 py-2 text-sm text-ink file:mr-3 file:rounded-full file:border-0 file:bg-band file:px-3 file:py-1.5 file:text-sm file:text-ink"
+      <Card>
+        <FormSection
+          title="মূল তথ্য"
+          description="পাঠক কার্ডে যে নাম ও ঠিকানা দেখবে।"
+          icon={Globe}
+        >
+          <div className="grid gap-5 sm:grid-cols-2">
+            <Field
+              label="নাম"
+              name="name"
+              required
+              defaultValue={outlet?.name}
+              error={fe.name}
+              placeholder="যেমন: Prothom Alo"
+            />
+            <Field
+              label="বাংলা নাম"
+              name="name_bn"
+              defaultValue={outlet?.name_bn}
+              error={fe.name_bn}
+              placeholder="প্রথম আলো"
+            />
+          </div>
+          <Field
+            label="ওয়েবসাইট ঠিকানা"
+            name="url"
+            required
+            type="url"
+            dir="ltr"
+            defaultValue={outlet?.url}
+            error={fe.url}
+            placeholder="https://example.com"
           />
-          <p className="mt-1 text-xs text-faint">Stored in the Supabase “logos” bucket.</p>
-        </div>
+          <div className="grid gap-5 sm:grid-cols-2">
+            <Select
+              label="ক্যাটাগরি"
+              name="category_slug"
+              required
+              defaultValue={outlet?.category_slug ?? defaultCategory ?? ""}
+              error={fe.category_slug}
+              options={[
+                { value: "", label: "— ক্যাটাগরি বাছুন —" },
+                ...categories.map((c) => ({ value: c.slug, label: c.title })),
+              ]}
+            />
+            <Field
+              label="ক্রম (sort order)"
+              name="sort_order"
+              type="number"
+              defaultValue={outlet?.sort_order ?? ""}
+              error={fe.sort_order}
+              hint={
+                outlet
+                  ? "ছোট সংখ্যা আগে দেখাবে।"
+                  : "ফাঁকা রাখলে ক্যাটাগরির সবার শেষে যুক্ত হবে।"
+              }
+            />
+          </div>
+          <TextArea
+            label="সংক্ষিপ্ত বর্ণনা"
+            name="description"
+            defaultValue={outlet?.description}
+            error={fe.description}
+            rows={3}
+            hint="ঐচ্ছিক — কার্ড ও ভিউয়ারে দেখানো হয়।"
+          />
+        </FormSection>
 
-        <div className="sm:col-span-2">
-          <TextArea label="Description" name="description" defaultValue={outlet?.description} error={fe.description} rows={3} />
-        </div>
+        <CardDivider />
 
-        <Checkbox label="Featured (Top badge)" name="is_featured" defaultChecked={outlet?.is_featured ?? false} />
-        <Checkbox label="Open externally (skip viewer)" name="open_external" defaultChecked={outlet?.open_external ?? false} />
-        <Checkbox label="Active (visible on site)" name="is_active" defaultChecked={outlet?.is_active ?? true} />
-      </div>
+        <FormSection
+          title="লোগো"
+          description="লোগো না দিলে সাইটের নিজস্ব ফেভিকন ব্যবহার করা হবে।"
+          icon={ImageIcon}
+        >
+          <Field
+            label="লোগোর লিংক"
+            name="logo_url"
+            dir="ltr"
+            defaultValue={outlet?.logo_url}
+            error={fe.logo_url}
+            placeholder="https://…/logo.png"
+            hint="লিংক দিন, অথবা নিচ থেকে ফাইল আপলোড করুন (আপলোড অগ্রাধিকার পাবে)।"
+          />
+          <ImageField
+            label="লোগো আপলোড"
+            name="logo_file"
+            currentUrl={outlet?.logo_url}
+            hint="Supabase “logos” বাকেটে সংরক্ষণ করা হবে।"
+          />
+        </FormSection>
 
-      <SubmitBar pending={pending} label={outlet ? "Update outlet" : "Create outlet"} cancelHref="/admin/outlets" />
+        <CardDivider />
+
+        <FormSection title="প্রদর্শনের সেটিং" icon={SlidersHorizontal}>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <Checkbox
+              label="সক্রিয়"
+              name="is_active"
+              defaultChecked={outlet?.is_active ?? true}
+              hint="বন্ধ করলে সাইটে দেখাবে না"
+            />
+            <Checkbox
+              label="ফিচার্ড (টপ ব্যাজ)"
+              name="is_featured"
+              defaultChecked={outlet?.is_featured ?? false}
+              hint="কার্ডে “টপ” লেখা দেখাবে"
+            />
+            <Checkbox
+              label="সরাসরি ওয়েবসাইটে যাবে"
+              name="open_external"
+              defaultChecked={outlet?.open_external ?? false}
+              hint="ইন-সাইট ভিউয়ার এড়িয়ে যাবে"
+            />
+          </div>
+        </FormSection>
+
+        <SubmitBar
+          pending={pending}
+          label={outlet ? "পরিবর্তন সংরক্ষণ করুন" : "সাইটটি যোগ করুন"}
+          cancelHref={returnTo}
+        />
+      </Card>
     </form>
   );
 }

@@ -1,8 +1,10 @@
 "use client";
 
 import { useActionState } from "react";
+import { FolderTree, LayoutGrid, Palette } from "lucide-react";
 import { upsertCategory, type FormState } from "@/lib/actions/admin";
 import { Field, TextArea, Select, Checkbox, SubmitBar, ErrorBanner } from "./form-kit";
+import { Card, CardDivider, FormSection } from "./ui";
 import { GROUPS } from "@/lib/site-config";
 import type { Category } from "@/lib/types";
 
@@ -11,43 +13,131 @@ export function CategoryForm({ category }: { category: Category | null }) {
   const fe = state.fieldErrors ?? {};
 
   return (
-    <form action={action} className="max-w-2xl rounded-2xl border border-line bg-surface p-6 sm:p-8">
+    <form action={action}>
       <ErrorBanner message={state.error} />
       {category && <input type="hidden" name="original_slug" value={category.slug} />}
 
-      <div className="grid gap-5 sm:grid-cols-2">
-        <Field label="Slug" name="slug" required defaultValue={category?.slug} error={fe.slug} hint="lowercase-with-hyphens" placeholder="online-portals" />
-        <Field label="Sort order" name="sort_order" type="number" defaultValue={category?.sort_order ?? 0} error={fe.sort_order} />
-        <Field label="Title" name="title" required defaultValue={category?.title} error={fe.title} placeholder="Top Online Bangla News Portals" />
-        <Field label="Bangla title" name="title_bn" defaultValue={category?.title_bn} error={fe.title_bn} placeholder="অনলাইন বাংলা নিউজ পোর্টাল" />
-        <div className="sm:col-span-2">
-          <TextArea label="Description" name="description" defaultValue={category?.description} error={fe.description} rows={3} />
-        </div>
-        <Select
-          label="Group"
-          name="group_key"
-          required
-          defaultValue={category?.group ?? "portals"}
-          error={fe.group_key}
-          options={Object.entries(GROUPS).map(([value, label]) => ({ value, label }))}
-        />
-        <Select
-          label="Section type"
-          name="section_type"
-          defaultValue={category?.section_type ?? "outlet_grid"}
-          options={[
-            { value: "outlet_grid", label: "Outlet grid (logo tiles)" },
-            { value: "division_grid", label: "Division grid (map tiles)" },
-          ]}
-        />
-        <Field label="Parent slug" name="parent_slug" defaultValue={category?.parent_slug} hint="e.g. local-newspaper (for divisions). Leave blank for top-level." placeholder="" />
-        <Field label="Accent color" name="accent" defaultValue={category?.accent} hint="hex, e.g. #E8A100 (for division tiles)" placeholder="#c8102e" />
+      <Card>
+        <FormSection
+          title="মূল তথ্য"
+          description="ক্যাটাগরির নাম ও ঠিকানা — slug দিয়েই পাবলিক পেজের লিংক তৈরি হয়।"
+          icon={FolderTree}
+        >
+          <div className="grid gap-5 sm:grid-cols-2">
+            <Field
+              label="শিরোনাম"
+              name="title"
+              required
+              defaultValue={category?.title}
+              error={fe.title}
+              placeholder="Top Online Bangla News Portals"
+            />
+            <Field
+              label="বাংলা শিরোনাম"
+              name="title_bn"
+              defaultValue={category?.title_bn}
+              error={fe.title_bn}
+              placeholder="অনলাইন বাংলা নিউজ পোর্টাল"
+            />
+            <Field
+              label="Slug"
+              name="slug"
+              required
+              dir="ltr"
+              defaultValue={category?.slug}
+              error={fe.slug}
+              hint="ছোট হাতের ইংরেজি অক্ষর ও হাইফেন — যেমন online-portals"
+              placeholder="online-portals"
+            />
+            <Field
+              label="ক্রম (sort order)"
+              name="sort_order"
+              type="number"
+              defaultValue={category?.sort_order ?? 0}
+              error={fe.sort_order}
+              hint="হোমপেজে ছোট সংখ্যা আগে দেখাবে।"
+            />
+          </div>
+          <TextArea
+            label="বর্ণনা"
+            name="description"
+            defaultValue={category?.description}
+            error={fe.description}
+            rows={3}
+            hint="ক্যাটাগরি পেজের উপরে দেখানো হয়।"
+          />
+        </FormSection>
 
-        <Checkbox label="Show on homepage" name="show_on_home" defaultChecked={category?.home ?? false} />
-        <Checkbox label="Active" name="is_active" defaultChecked={category?.is_active ?? true} />
-      </div>
+        <CardDivider />
 
-      <SubmitBar pending={pending} label={category ? "Update category" : "Create category"} cancelHref="/admin/categories" />
+        <FormSection
+          title="সাজানো ও গঠন"
+          description="কোন গ্রুপে পড়বে এবং কীভাবে দেখাবে।"
+          icon={LayoutGrid}
+        >
+          <div className="grid gap-5 sm:grid-cols-2">
+            <Select
+              label="গ্রুপ"
+              name="group_key"
+              required
+              defaultValue={category?.group ?? "portals"}
+              error={fe.group_key}
+              options={Object.entries(GROUPS).map(([value, label]) => ({ value, label }))}
+              hint="হেডারের মেগা-মেনু এই গ্রুপ অনুযায়ী সাজানো হয়।"
+            />
+            <Select
+              label="সেকশনের ধরন"
+              name="section_type"
+              defaultValue={category?.section_type ?? "outlet_grid"}
+              options={[
+                { value: "outlet_grid", label: "সাইট গ্রিড (লোগো টাইল)" },
+                { value: "division_grid", label: "বিভাগ গ্রিড (ম্যাপ টাইল)" },
+              ]}
+            />
+            <Field
+              label="প্যারেন্ট slug"
+              name="parent_slug"
+              dir="ltr"
+              defaultValue={category?.parent_slug}
+              hint="বিভাগীয় পত্রিকার জন্য local-newspaper। শীর্ষ পর্যায়ের ক্যাটাগরি হলে ফাঁকা রাখুন।"
+              placeholder=""
+            />
+            <Field
+              label="অ্যাকসেন্ট রং"
+              name="accent"
+              dir="ltr"
+              defaultValue={category?.accent}
+              hint="হেক্স কোড, যেমন #E8A100 — বিভাগ টাইলে ব্যবহৃত হয়।"
+              placeholder="#c8102e"
+            />
+          </div>
+        </FormSection>
+
+        <CardDivider />
+
+        <FormSection title="প্রদর্শন" icon={Palette}>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Checkbox
+              label="হোমপেজে দেখান"
+              name="show_on_home"
+              defaultChecked={category?.home ?? false}
+              hint="হোমপেজে নিজস্ব সেকশন হিসেবে আসবে"
+            />
+            <Checkbox
+              label="সক্রিয়"
+              name="is_active"
+              defaultChecked={category?.is_active ?? true}
+              hint="বন্ধ করলে সাইটের কোথাও দেখাবে না"
+            />
+          </div>
+        </FormSection>
+
+        <SubmitBar
+          pending={pending}
+          label={category ? "পরিবর্তন সংরক্ষণ করুন" : "ক্যাটাগরি তৈরি করুন"}
+          cancelHref="/admin/categories"
+        />
+      </Card>
     </form>
   );
 }

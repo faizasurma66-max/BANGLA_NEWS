@@ -1,17 +1,20 @@
 "use client";
 
 import { Trash2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export function DeleteButton({
   action,
   hidden,
-  confirmText = "Delete this item? This cannot be undone.",
+  confirmText = "এটি মুছে ফেলবেন? এই কাজটি ফিরিয়ে আনা যাবে না।",
   label,
+  className,
 }: {
   action: (formData: FormData) => void | Promise<void>;
   hidden: Record<string, string>;
   confirmText?: string;
   label?: string;
+  className?: string;
 }) {
   return (
     <form
@@ -25,10 +28,14 @@ export function DeleteButton({
       ))}
       <button
         type="submit"
-        className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium text-muted transition hover:bg-accent-soft hover:text-accent"
+        title={label ?? "মুছে ফেলুন"}
+        className={cn(
+          "inline-flex items-center gap-1.5 rounded-[9px] px-2.5 py-1.5 text-xs font-medium text-a-faint transition hover:bg-accent-soft hover:text-accent",
+          className,
+        )}
       >
         <Trash2 className="h-3.5 w-3.5" />
-        {label ?? "Delete"}
+        {label}
       </button>
     </form>
   );

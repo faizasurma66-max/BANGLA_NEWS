@@ -1,12 +1,26 @@
-import { Check, X, ExternalLink } from "lucide-react";
+import { Check, X, ExternalLink, Inbox, Mail, CalendarDays } from "lucide-react";
 import { adminListSubmissions, adminListCategories } from "@/lib/admin-queries";
 import { approveSubmission, rejectSubmission } from "@/lib/actions/admin";
+import { requireSection } from "@/lib/auth";
 import { hasServiceRole } from "@/lib/env";
-import { formatDate } from "@/lib/utils";
+import { bnNum, formatDateBn, hostname } from "@/lib/utils";
+import {
+  Alert,
+  Badge,
+  Card,
+  EmptyState,
+  PageHeader,
+  TableShell,
+  Td,
+  Th,
+  Tr,
+} from "@/components/admin/ui";
 
 export const dynamic = "force-dynamic";
 
 export default async function SubmissionsPage() {
+  await requireSection("submissions");
+
   const [subs, cats] = await Promise.all([
     adminListSubmissions(),
     adminListCategories(),
@@ -16,55 +30,79 @@ export default async function SubmissionsPage() {
   const handled = subs.filter((s) => s.status !== "pending");
 
   return (
-    <div className="mx-auto max-w-4xl">
-      <h1 className="font-serif text-2xl font-semibold text-ink">Submissions</h1>
-      <p className="mt-1 text-sm text-muted">
-        {pending.length} pending · {handled.length} handled
-      </p>
+    <div className="mx-auto max-w-5xl">
+      <PageHeader
+        eyebrow="কনটেন্ট"
+        title="সাইট সাবমিশন"
+        description={
+          <>
+            {bnNum(pending.length)} টি অপেক্ষমাণ, {bnNum(handled.length)} টি রিভিউ হয়ে গেছে।
+            অনুমোদন করলে সাইটটি নির্বাচিত ক্যাটাগরিতে যুক্ত হয়ে সাথে সাথেই লাইভ হবে।
+          </>
+        }
+      />
 
       {!hasServiceRole() ? (
-        <div className="mt-8 rounded-xl border border-amber-300 bg-amber-50 px-4 py-6 text-sm text-amber-900">
-          Connect Supabase to receive and moderate submissions.
-        </div>
+        <Alert tone="warn" title="Supabase যুক্ত করুন">
+          সাবমিশন গ্রহণ ও মডারেশনের জন্য Supabase সংযোগ প্রয়োজন।
+        </Alert>
       ) : pending.length === 0 ? (
-        <p className="mt-8 rounded-xl border border-dashed border-line bg-surface px-4 py-12 text-center text-sm text-muted">
-          No submissions waiting for review. 🎉
-        </p>
+        <EmptyState
+          icon={Inbox}
+          title="রিভিউর অপেক্ষায় কিছু নেই"
+          description="পাঠকেরা “Submit your site” ফর্ম দিয়ে নতুন সাইট পাঠালে সেগুলো এখানে দেখা যাবে।"
+        />
       ) : (
-        <div className="mt-6 space-y-4">
+        <div className="space-y-3">
           {pending.map((s) => (
-            <div key={s.id} className="rounded-2xl border border-line bg-surface p-5">
+            <Card key={s.id}>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="font-medium text-ink">{s.outlet_name}</p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h2 className="text-[0.9375rem] font-bold text-a-ink">{s.outlet_name}</h2>
+                    {s.category_suggestion && (
+                      <Badge tone="info">প্রস্তাবিত: {s.category_suggestion}</Badge>
+                    )}
+                  </div>
                   <a
                     href={s.url}
                     target="_blank"
                     rel="noreferrer"
-                    className="mt-0.5 inline-flex items-center gap-1 text-sm text-accent hover:underline"
+                    dir="ltr"
+                    className="mt-1 inline-flex items-center gap-1 text-[0.8125rem] font-medium text-accent hover:underline"
                   >
-                    {s.url} <ExternalLink className="h-3 w-3" />
+                    {hostname(s.url)} <ExternalLink className="h-3 w-3" />
                   </a>
-                  {s.notes && <p className="mt-2 text-sm text-muted">{s.notes}</p>}
-                  <p className="mt-2 text-xs text-faint">
-                    {s.submitter_email ? `${s.submitter_email} · ` : ""}
-                    {formatDate(s.created_at)}
-                    {s.category_suggestion ? ` · suggested: ${s.category_suggestion}` : ""}
+                  {s.notes && (
+                    <p className="mt-2.5 rounded-[var(--radius-a-sm)] bg-a-sunken px-3 py-2 text-[0.8125rem] leading-relaxed text-a-ink-soft">
+                      {s.notes}
+                    </p>
+                  )}
+                  <p className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-a-faint">
+                    {s.submitter_email && (
+                      <span className="inline-flex items-center gap-1" dir="ltr">
+                        <Mail className="h-3.5 w-3.5" /> {s.submitter_email}
+                      </span>
+                    )}
+                    <span className="inline-flex items-center gap-1">
+                      <CalendarDays className="h-3.5 w-3.5" /> {formatDateBn(s.created_at)}
+                    </span>
                   </p>
                 </div>
               </div>
 
-              <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-line pt-4">
-                <form action={approveSubmission} className="flex items-center gap-2">
+              <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-a-line-soft pt-4">
+                <form action={approveSubmission} className="flex flex-wrap items-center gap-2">
                   <input type="hidden" name="id" value={s.id} />
                   <select
                     name="category_slug"
                     required
                     defaultValue=""
-                    className="rounded-lg border border-line bg-paper px-3 py-2 text-sm text-ink"
+                    aria-label="ক্যাটাগরি বাছুন"
+                    className="admin-input w-auto min-w-[220px] py-2"
                   >
                     <option value="" disabled>
-                      Publish into…
+                      কোন ক্যাটাগরিতে যাবে…
                     </option>
                     {catOptions.map((c) => (
                       <option key={c.slug} value={c.slug}>
@@ -74,48 +112,58 @@ export default async function SubmissionsPage() {
                   </select>
                   <button
                     type="submit"
-                    className="inline-flex items-center gap-1.5 rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
+                    className="inline-flex items-center gap-1.5 rounded-[10px] bg-a-ok px-4 py-2.5 text-sm font-semibold text-white shadow-a-card transition hover:brightness-95 active:translate-y-px"
                   >
-                    <Check className="h-4 w-4" /> Approve
+                    <Check className="h-4 w-4" /> অনুমোদন
                   </button>
                 </form>
                 <form action={rejectSubmission}>
                   <input type="hidden" name="id" value={s.id} />
                   <button
                     type="submit"
-                    className="inline-flex items-center gap-1.5 rounded-full border border-line px-4 py-2 text-sm font-medium text-ink-soft hover:bg-band"
+                    className="inline-flex items-center gap-1.5 rounded-[10px] border border-a-line bg-a-surface px-4 py-2.5 text-sm font-semibold text-a-muted transition hover:border-accent-ring hover:bg-accent-soft hover:text-accent"
                   >
-                    <X className="h-4 w-4" /> Reject
+                    <X className="h-4 w-4" /> বাতিল
                   </button>
                 </form>
               </div>
-            </div>
+            </Card>
           ))}
         </div>
       )}
 
       {handled.length > 0 && (
-        <div className="mt-10">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-faint">History</h2>
-          <ul className="mt-3 divide-y divide-line rounded-2xl border border-line bg-surface">
-            {handled.slice(0, 20).map((s) => (
-              <li key={s.id} className="flex items-center justify-between gap-3 px-4 py-3">
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-ink">{s.outlet_name}</p>
-                  <p className="truncate text-xs text-faint">{s.url}</p>
-                </div>
-                <span
-                  className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                    s.status === "approved"
-                      ? "bg-emerald-50 text-emerald-700"
-                      : "bg-band text-muted"
-                  }`}
-                >
-                  {s.status}
-                </span>
-              </li>
-            ))}
-          </ul>
+        <div className="mt-8">
+          <h2 className="mb-2.5 px-0.5 text-[0.9375rem] font-bold text-a-ink">রিভিউ ইতিহাস</h2>
+          <TableShell>
+            <table className="w-full min-w-[520px] border-collapse">
+              <thead>
+                <tr>
+                  <Th align="left">সাইট</Th>
+                  <Th align="left" className="w-40">তারিখ</Th>
+                  <Th align="right" className="w-32">ফলাফল</Th>
+                </tr>
+              </thead>
+              <tbody>
+                {handled.slice(0, 20).map((s) => (
+                  <Tr key={s.id}>
+                    <Td>
+                      <p className="font-semibold text-a-ink">{s.outlet_name}</p>
+                      <p className="text-xs text-a-faint" dir="ltr">
+                        {hostname(s.url)}
+                      </p>
+                    </Td>
+                    <Td className="text-a-muted">{formatDateBn(s.created_at)}</Td>
+                    <Td align="right">
+                      <Badge tone={s.status === "approved" ? "ok" : "muted"}>
+                        {s.status === "approved" ? "অনুমোদিত" : "বাতিল"}
+                      </Badge>
+                    </Td>
+                  </Tr>
+                ))}
+              </tbody>
+            </table>
+          </TableShell>
         </div>
       )}
     </div>

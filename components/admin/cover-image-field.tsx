@@ -35,47 +35,45 @@ export function CoverImageField({
       if (res.ok && json.url) {
         setUrl(json.url);
       } else {
-        setUploadError(json.error || "Upload failed.");
+        setUploadError(json.error || "আপলোড ব্যর্থ হয়েছে।");
       }
     } catch {
-      setUploadError("Upload failed. Please try again.");
+      setUploadError("আপলোড ব্যর্থ হয়েছে। আবার চেষ্টা করুন।");
     } finally {
       setUploading(false);
     }
   };
 
-  const inputCls =
-    "w-full rounded-xl border border-line bg-paper px-3.5 py-2.5 text-sm text-ink outline-none transition focus:border-accent aria-[invalid=true]:border-accent";
-
   return (
     <div>
-      <label htmlFor="cover_image" className="text-sm font-medium text-ink-soft">
-        Cover image
+      <label htmlFor="cover_image" className="mb-1.5 block text-[0.8125rem] font-semibold text-a-ink-soft">
+        কভার ছবি
       </label>
 
       {/* Submitted value — always a URL (typed or uploaded). */}
-      <div className="mt-1.5 flex gap-2">
+      <div className="flex gap-2">
         <input
           id="cover_image"
           name="cover_image"
           value={url}
+          dir="ltr"
           onChange={(e) => setUrl(e.target.value)}
           aria-invalid={!!error}
-          placeholder="https://…/cover.jpg  — or upload a file →"
-          className={inputCls}
+          placeholder="https://…/cover.jpg"
+          className="admin-input"
         />
         <button
           type="button"
           onClick={() => fileRef.current?.click()}
           disabled={uploading}
-          className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-line bg-band px-4 text-sm font-medium text-ink-soft transition hover:bg-surface hover:text-ink disabled:opacity-60"
+          className="inline-flex shrink-0 items-center gap-2 rounded-[var(--radius-a-sm)] border border-a-line bg-a-sunken px-4 text-sm font-semibold text-a-ink-soft transition hover:bg-a-surface hover:text-a-ink disabled:opacity-60"
         >
           {uploading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
             <Upload className="h-4 w-4" />
           )}
-          {uploading ? "Uploading…" : "Upload"}
+          {uploading ? "আপলোড হচ্ছে…" : "আপলোড"}
         </button>
         <input
           ref={fileRef}
@@ -87,33 +85,29 @@ export function CoverImageField({
       </div>
 
       {uploadError ? (
-        <p className="mt-1 text-xs text-accent">{uploadError}</p>
+        <p className="mt-1.5 text-xs font-medium text-accent">{uploadError}</p>
       ) : error ? (
-        <p className="mt-1 text-xs text-accent">{error}</p>
+        <p className="mt-1.5 text-xs font-medium text-accent">{error}</p>
       ) : (
-        <p className="mt-1 text-xs text-faint">
-          Paste an image URL, or upload a file from your computer (max 8 MB).
+        <p className="mt-1.5 text-xs text-a-faint">
+          ছবির লিংক পেস্ট করুন, অথবা কম্পিউটার থেকে ফাইল আপলোড করুন (সর্বোচ্চ ৮ MB)।
         </p>
       )}
 
       {/* Live preview with a quick clear button. */}
       {url && (
         <div className="mt-3 flex items-start gap-3">
-          <div className="relative h-20 w-32 shrink-0 overflow-hidden rounded-lg border border-line bg-band">
+          <div className="relative h-20 w-32 shrink-0 overflow-hidden rounded-[10px] border border-a-line bg-a-sunken">
             {/* Use a plain <img>: cover URLs come from arbitrary hosts. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={url}
-              alt="Cover preview"
-              className="h-full w-full object-cover"
-            />
+            <img src={url} alt="" className="h-full w-full object-cover" />
           </div>
           <button
             type="button"
             onClick={() => setUrl("")}
-            className="inline-flex items-center gap-1 rounded-lg border border-line px-2.5 py-1 text-xs font-medium text-muted transition hover:bg-band hover:text-ink"
+            className="inline-flex items-center gap-1 rounded-[9px] border border-a-line px-2.5 py-1.5 text-xs font-semibold text-a-muted transition hover:border-accent-ring hover:bg-accent-soft hover:text-accent"
           >
-            <X className="h-3 w-3" /> Remove
+            <X className="h-3 w-3" /> সরান
           </button>
         </div>
       )}

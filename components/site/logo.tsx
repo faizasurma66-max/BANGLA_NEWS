@@ -1,18 +1,50 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-/** Editorial wordmark + geometric peak mark (echoes the reference brand). */
+/**
+ * Site wordmark. Renders the logo uploaded in Settings → General when there is
+ * one, and otherwise falls back to the built-in peak mark plus the site name,
+ * so the header never looks broken before the client uploads anything.
+ */
 export function Logo({
   className,
   compact = false,
+  src,
+  name = "AllNewspaperBangla",
 }: {
   className?: string;
   compact?: boolean;
+  src?: string | null;
+  name?: string;
 }) {
+  if (src) {
+    return (
+      <Link
+        href="/"
+        aria-label={`${name} home`}
+        className={cn("group inline-flex items-center", className)}
+      >
+        {/* Uploaded logos are arbitrary sizes; cap the height and let the width
+            follow so a 180×50 or a square mark both sit correctly. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={src}
+          alt={name}
+          className="h-9 w-auto max-w-[190px] object-contain transition-transform duration-300 group-hover:-translate-y-0.5"
+        />
+      </Link>
+    );
+  }
+
+  // Split the name so the tail can carry the accent, as the original mark did.
+  const words = name.trim().split(/\s+/);
+  const head = words.length > 1 ? words.slice(0, -1).join(" ") + " " : name;
+  const tail = words.length > 1 ? words[words.length - 1] : "";
+
   return (
     <Link
       href="/"
-      aria-label="AllNewspaperBangla home"
+      aria-label={`${name} home`}
       className={cn("group inline-flex items-center gap-2.5", className)}
     >
       <span className="grid h-9 w-9 place-items-center rounded-[10px] bg-accent shadow-sm ring-1 ring-accent-dark/30 transition-transform duration-300 group-hover:-translate-y-0.5">
@@ -29,7 +61,8 @@ export function Logo({
       </span>
       {!compact && (
         <span className="font-serif text-[1.15rem] font-semibold leading-none tracking-tight text-ink">
-          AllNewspaper<span className="text-accent">Bangla</span>
+          {head}
+          {tail && <span className="text-accent">{tail}</span>}
         </span>
       )}
     </Link>

@@ -1,10 +1,12 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { FileText, ImageIcon, Send } from "lucide-react";
 import { upsertPost, type FormState } from "@/lib/actions/admin";
 import { TextArea, Checkbox, SubmitBar, ErrorBanner } from "./form-kit";
 import { RichEditor } from "./rich-editor";
 import { CoverImageField } from "./cover-image-field";
+import { Card, CardDivider, FormSection } from "./ui";
 import { slugify } from "@/lib/seed-data";
 import type { Post } from "@/lib/types";
 
@@ -21,84 +23,113 @@ export function PostForm({ post }: { post: Post | null }) {
     if (!slugTouched) setSlug(slugify(v));
   };
 
-  const inputCls =
-    "mt-1.5 w-full rounded-xl border border-line bg-paper px-3.5 py-2.5 text-sm text-ink outline-none transition focus:border-accent aria-[invalid=true]:border-accent";
-
   return (
-    <form action={action} className="max-w-3xl rounded-2xl border border-line bg-surface p-6 sm:p-8">
+    <form action={action}>
       <ErrorBanner message={state.error} />
       {post && <input type="hidden" name="id" value={post.id} />}
       {/* Preserve homepage order (managed by ↑/↓ on the posts list). */}
       <input type="hidden" name="sort_order" value={post?.sort_order ?? 0} />
 
-      <div className="grid gap-5 sm:grid-cols-2">
-        <div>
-          <label htmlFor="title" className="text-sm font-medium text-ink-soft">
-            Title <span className="text-accent">*</span>
-          </label>
-          <input
-            id="title"
-            name="title"
-            value={title}
-            onChange={(e) => onTitle(e.target.value)}
-            aria-invalid={!!fe.title}
-            placeholder="Post title"
-            className={inputCls}
-          />
-          {fe.title && <p className="mt-1 text-xs text-accent">{fe.title}</p>}
-        </div>
+      <Card>
+        <FormSection title="শিরোনাম ও ঠিকানা" icon={FileText}>
+          <div className="grid gap-5 sm:grid-cols-2">
+            <div>
+              <label htmlFor="title" className="mb-1.5 block text-[0.8125rem] font-semibold text-a-ink-soft">
+                শিরোনাম <span className="text-accent">*</span>
+              </label>
+              <input
+                id="title"
+                name="title"
+                value={title}
+                onChange={(e) => onTitle(e.target.value)}
+                aria-invalid={!!fe.title}
+                placeholder="পোস্টের শিরোনাম"
+                className="admin-input"
+              />
+              {fe.title && <p className="mt-1.5 text-xs font-medium text-accent">{fe.title}</p>}
+            </div>
 
-        <div>
-          <label htmlFor="slug" className="text-sm font-medium text-ink-soft">
-            Slug <span className="text-accent">*</span>
-          </label>
-          <input
-            id="slug"
-            name="slug"
-            value={slug}
-            onChange={(e) => {
-              setSlug(e.target.value);
-              setSlugTouched(true);
-            }}
-            aria-invalid={!!fe.slug}
-            placeholder="my-first-post"
-            className={inputCls}
-          />
-          {fe.slug ? (
-            <p className="mt-1 text-xs text-accent">{fe.slug}</p>
-          ) : (
-            <p className="mt-1 text-xs text-faint">
-              Auto-filled from the title — lowercase, hyphenated.
-            </p>
-          )}
-        </div>
-
-        <div className="sm:col-span-2">
-          <CoverImageField defaultValue={post?.cover_image} error={fe.cover_image} />
-        </div>
-
-        <div className="sm:col-span-2">
-          <TextArea label="Excerpt" name="excerpt" defaultValue={post?.excerpt} error={fe.excerpt} rows={2} placeholder="Short summary shown in the blog list." />
-        </div>
-
-        <div className="sm:col-span-2">
-          <label className="text-sm font-medium text-ink-soft">
-            Article <span className="text-accent">*</span>
-          </label>
-          <div className="mt-1.5">
-            <RichEditor name="content" defaultValue={post?.content ?? ""} />
+            <div>
+              <label htmlFor="slug" className="mb-1.5 block text-[0.8125rem] font-semibold text-a-ink-soft">
+                Slug <span className="text-accent">*</span>
+              </label>
+              <input
+                id="slug"
+                name="slug"
+                value={slug}
+                dir="ltr"
+                onChange={(e) => {
+                  setSlug(e.target.value);
+                  setSlugTouched(true);
+                }}
+                aria-invalid={!!fe.slug}
+                placeholder="my-first-post"
+                className="admin-input"
+              />
+              {fe.slug ? (
+                <p className="mt-1.5 text-xs font-medium text-accent">{fe.slug}</p>
+              ) : (
+                <p className="mt-1.5 text-xs text-a-faint">
+                  শিরোনাম থেকে নিজে থেকেই তৈরি হয় — ছোট হাতের অক্ষর ও হাইফেন।
+                </p>
+              )}
+            </div>
           </div>
-          {fe.content && <p className="mt-1 text-xs text-accent">{fe.content}</p>}
-          <p className="mt-1 text-xs text-faint">
-            Use the toolbar for big/small headings, bold, lists, quotes and inline images.
-          </p>
-        </div>
 
-        <Checkbox label="Published (visible on /blog)" name="published" defaultChecked={post?.published ?? false} />
-        <Checkbox label="Feature on homepage" name="featured" defaultChecked={post?.featured ?? false} />
-      </div>
+          <TextArea
+            label="সংক্ষিপ্তসার"
+            name="excerpt"
+            defaultValue={post?.excerpt}
+            error={fe.excerpt}
+            rows={2}
+            placeholder="ব্লগ তালিকায় যে ছোট বর্ণনাটি দেখানো হবে।"
+          />
+        </FormSection>
 
-      <SubmitBar pending={pending} label={post ? "Update post" : "Create post"} cancelHref="/admin/posts" />
+        <CardDivider />
+
+        <FormSection title="কভার ছবি" icon={ImageIcon}>
+          <CoverImageField defaultValue={post?.cover_image} error={fe.cover_image} />
+        </FormSection>
+
+        <CardDivider />
+
+        <FormSection
+          title="আর্টিকেল"
+          description="টুলবার দিয়ে হেডিং, বোল্ড, তালিকা, উদ্ধৃতি এবং ছবি যোগ করুন।"
+          icon={FileText}
+        >
+          <div>
+            <RichEditor name="content" defaultValue={post?.content ?? ""} />
+            {fe.content && <p className="mt-1.5 text-xs font-medium text-accent">{fe.content}</p>}
+          </div>
+        </FormSection>
+
+        <CardDivider />
+
+        <FormSection title="প্রকাশনা" icon={Send}>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Checkbox
+              label="প্রকাশিত"
+              name="published"
+              defaultChecked={post?.published ?? false}
+              hint="/blog পেজে দেখা যাবে"
+            />
+            <Checkbox
+              label="হোমপেজে ফিচার করুন"
+              name="featured"
+              defaultChecked={post?.featured ?? false}
+              hint="হোমপেজের ব্লগ গ্রিডে আসবে"
+            />
+          </div>
+        </FormSection>
+
+        <SubmitBar
+          pending={pending}
+          label={post ? "পরিবর্তন সংরক্ষণ করুন" : "পোস্ট তৈরি করুন"}
+          cancelHref="/admin/posts"
+        />
+      </Card>
     </form>
   );
 }
