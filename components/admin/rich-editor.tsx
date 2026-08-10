@@ -26,6 +26,7 @@ import {
   AlignLeft,
   AlignCenter,
   AlignRight,
+  AlignJustify,
   Undo2,
   Redo2,
   Loader2,
@@ -39,9 +40,14 @@ import { cn } from "@/lib/utils";
 export function RichEditor({
   name,
   defaultValue = "",
+  placeholder = "Start writing your article… use the toolbar for headings, images, lists and more.",
+  minHeight = 440,
 }: {
   name: string;
   defaultValue?: string;
+  placeholder?: string;
+  /** Editing box height in px — the footer pages want a shorter one than a blog post. */
+  minHeight?: number;
 }) {
   const [html, setHtml] = useState(defaultValue);
   const [uploading, setUploading] = useState(false);
@@ -60,16 +66,13 @@ export function RichEditor({
       }),
       Image.configure({ HTMLAttributes: { class: "rounded-xl" } }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),
-      Placeholder.configure({
-        placeholder:
-          "Start writing your article… use the toolbar for headings, images, lists and more.",
-      }),
+      Placeholder.configure({ placeholder }),
     ],
     content: defaultValue,
     editorProps: {
       attributes: {
-        class:
-          "tiptap prose prose-neutral max-w-none min-h-[440px] px-4 py-4 focus:outline-none",
+        class: "tiptap prose prose-neutral max-w-none px-4 py-4 focus:outline-none",
+        style: `min-height:${minHeight}px`,
       },
     },
     onUpdate: ({ editor }) => setHtml(editor.getHTML()),
@@ -135,6 +138,7 @@ export function RichEditor({
           <Btn active={editor.isActive({ textAlign: "left" })} onClick={() => editor.chain().focus().setTextAlign("left").run()} label="Align left" icon={AlignLeft} />
           <Btn active={editor.isActive({ textAlign: "center" })} onClick={() => editor.chain().focus().setTextAlign("center").run()} label="Align center" icon={AlignCenter} />
           <Btn active={editor.isActive({ textAlign: "right" })} onClick={() => editor.chain().focus().setTextAlign("right").run()} label="Align right" icon={AlignRight} />
+          <Btn active={editor.isActive({ textAlign: "justify" })} onClick={() => editor.chain().focus().setTextAlign("justify").run()} label="Justify" icon={AlignJustify} />
           <Divider />
           <Btn active={editor.isActive("link")} onClick={setLink} label="Add link" icon={Link2} />
           <Btn onClick={() => editor.chain().focus().unsetLink().run()} disabled={!editor.isActive("link")} label="Remove link" icon={Unlink} />

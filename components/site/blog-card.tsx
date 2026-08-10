@@ -2,10 +2,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { Newspaper, Calendar, Eye } from "lucide-react";
 import { formatDate } from "@/lib/utils";
-import type { Post } from "@/lib/types";
+import type { PostCard } from "@/lib/types";
 
 /** Premium blog card — links to the full article page at /blog/[slug]. */
-export function BlogCard({ post }: { post: Post }) {
+export function BlogCard({ post }: { post: PostCard }) {
   return (
     <Link
       href={`/blog/${post.slug}`}

@@ -91,6 +91,11 @@ export const categoryInput = z.object({
   accent: z.string().trim().max(20).optional().default(""),
   sort_order: z.number().int().min(0).max(99999).default(0),
   show_on_home: z.boolean().default(false),
+  /**
+   * Homepage cap for this category; 0 = show every outlet it contains. Bounded
+   * at 9999 to match the smallint column and its CHECK (migration 0009).
+   */
+  home_limit: z.number().int().min(0).max(9999).default(12),
   is_active: z.boolean().default(true),
 });
 
@@ -137,9 +142,11 @@ export const settingsInput = z.object({
     .union([z.literal(""), z.email("সঠিক ইমেইল ঠিকানা দিন").max(160)])
     .optional()
     .default(""),
-  page_about: z.string().trim().max(8000).optional().default(""),
-  page_disclaimer: z.string().trim().max(8000).optional().default(""),
-  page_privacy: z.string().trim().max(8000).optional().default(""),
+  // Rich text — the editor posts HTML, so the tag overhead needs headroom well
+  // beyond what the same copy would take as plain paragraphs.
+  page_about: z.string().trim().max(60000).optional().default(""),
+  page_disclaimer: z.string().trim().max(60000).optional().default(""),
+  page_privacy: z.string().trim().max(60000).optional().default(""),
 });
 
 export type SubmissionInput = z.infer<typeof submissionInput>;

@@ -6,6 +6,7 @@ import { writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { CATEGORIES, OUTLETS } from "../lib/seed-data";
+import { DEFAULT_HOME_LIMIT } from "../lib/site-config";
 
 const esc = (v: string | null | undefined): string =>
   v === null || v === undefined || v === ""
@@ -19,7 +20,7 @@ const lines: string[] = [
   "-- Run after schema.sql. Safe to re-run (on conflict do nothing).",
   "",
   "insert into public.categories",
-  "  (slug,title,title_bn,description,section_type,parent_slug,group_key,sort_order,show_on_home,accent,is_active)",
+  "  (slug,title,title_bn,description,section_type,parent_slug,group_key,sort_order,show_on_home,home_limit,accent,is_active)",
   "values",
 ];
 
@@ -28,7 +29,8 @@ lines.push(
     (c) =>
       `  (${esc(c.slug)},${esc(c.title)},${esc(c.title_bn)},${esc(c.description)},` +
       `${esc(c.section_type)},${esc(c.parent_slug ?? null)},${esc(c.group)},` +
-      `${int(c.sort_order)},${bool(c.home)},${esc(c.accent ?? null)},true)`,
+      `${int(c.sort_order)},${bool(c.home)},${int(c.home_limit ?? DEFAULT_HOME_LIMIT)},` +
+      `${esc(c.accent ?? null)},true)`,
   ).join(",\n") + "\non conflict (slug) do nothing;",
 );
 

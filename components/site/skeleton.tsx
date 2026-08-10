@@ -1,8 +1,10 @@
 /** Reusable shimmer skeleton components that match real card dimensions. */
 
+import { COMPACT_GRID } from "./outlet-card";
+
 export function SkeletonCard() {
   return (
-    <div className="flex h-[110px] w-full flex-col overflow-hidden rounded-lg border border-line bg-surface sm:w-[217px]">
+    <div className="flex h-[110px] w-full flex-col overflow-hidden rounded-lg border border-line bg-surface">
       <div className="skeleton h-[90px] w-full shrink-0" />
       <div className="flex flex-1 items-center justify-center border-t border-line px-1.5">
         <div className="skeleton h-2.5 w-3/4 rounded" />
@@ -13,7 +15,7 @@ export function SkeletonCard() {
 
 export function SkeletonGrid({ count = 12 }: { count?: number }) {
   return (
-    <div className="grid grid-cols-2 justify-center gap-3 sm:[grid-template-columns:repeat(auto-fill,217px)]">
+    <div className={COMPACT_GRID}>
       {Array.from({ length: count }, (_, i) => (
         <SkeletonCard key={i} />
       ))}

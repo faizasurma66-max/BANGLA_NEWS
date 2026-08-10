@@ -4,8 +4,23 @@ import {
   CATEGORIES as SEED_CATEGORIES,
   OUTLETS as SEED_OUTLETS,
 } from "@/lib/seed-data";
-import type { Category, Outlet, HomeSection, Post } from "@/lib/types";
-import type { GroupKey } from "@/lib/site-config";
+import type { Category, Outlet, HomeSection, Post, PostCard } from "@/lib/types";
+import { DEFAULT_HOME_LIMIT, type GroupKey } from "@/lib/site-config";
+
+/**
+ * Column lists for the public reads.
+ *
+ * These used to be `select *`. The public site never renders an outlet's
+ * `description` or `click_count`, nor a post's `content` outside the article
+ * page itself — but every render was pulling them across the wire and turning
+ * them into JavaScript objects. Naming the columns keeps the working set
+ * proportional to what is on screen rather than to the size of the tables.
+ */
+const OUTLET_PUBLIC_COLS =
+  "id, slug, name, name_bn, url, logo_url, is_featured, open_external, sort_order, is_active, category:categories(slug)";
+
+const POST_CARD_COLS =
+  "id, slug, title, excerpt, cover_image, published, featured, sort_order, click_count, published_at, created_at, updated_at";
 
 /*
  * Reads hit Supabase when configured, else fall back to bundled seed data.
@@ -28,6 +43,7 @@ function normCategory(row: Record<string, unknown>): Category {
     group: (row.group_key as GroupKey) ?? "portals",
     sort_order: (row.sort_order as number) ?? 0,
     home: (row.show_on_home as boolean) ?? false,
+    home_limit: (row.home_limit as number) ?? DEFAULT_HOME_LIMIT,
     accent: (row.accent as string) ?? null,
     is_active: (row.is_active as boolean) ?? true,
   };
@@ -80,7 +96,7 @@ async function fetchOutlets(): Promise<Outlet[]> {
     try {
       const { data, error } = await db
         .from("outlets")
-        .select("*, category:categories(slug)")
+        .select(OUTLET_PUBLIC_COLS)
         .eq("is_active", true)
         .order("sort_order", { ascending: true });
       if (error) throw error;
@@ -133,7 +149,7 @@ export async function getOutletByHandle(
       const col = UUID_RE.test(handle) ? "id" : "slug";
       const { data } = await db
         .from("outlets")
-        .select("*, category:categories(slug)")
+        .select(OUTLET_PUBLIC_COLS)
         .eq(col, handle)
         .maybeSingle();
       if (data) return normOutlet(data);
@@ -151,7 +167,7 @@ export async function getOutletLight(id: string): Promise<Outlet | undefined> {
     try {
       const { data } = await db
         .from("outlets")
-        .select("*, category:categories(slug)")
+        .select(OUTLET_PUBLIC_COLS)
         .eq("id", id)
         .maybeSingle();
       if (data) return normOutlet(data);
@@ -216,9 +232,83 @@ export async function getViewData(id: string): Promise<ViewData | null> {
   };
 }
 
-/** Homepage sections in order, each with resolved outlets (and division children). */
+type HomeSectionRow = {
+  category_slug: string;
+  category_total: number | null;
+  id: string;
+  slug: string | null;
+  name: string;
+  name_bn: string | null;
+  url: string;
+  logo_url: string | null;
+  is_featured: boolean | null;
+  open_external: boolean | null;
+  sort_order: number | null;
+};
+
+type HomeGroup = { outlets: Outlet[]; total: number };
+
+/**
+ * Homepage tiles straight from `home_section_outlets` (migration 0010): the
+ * top `home_limit` active outlets per homepage category, chosen in Postgres.
+ *
+ * Returns null when there is no database, or when the view is missing because
+ * the migration has not been run — the caller then falls back to the old
+ * fetch-everything-and-slice path so the page still renders.
+ */
+const fetchHomeGroups = cache(async (): Promise<Map<string, HomeGroup> | null> => {
+  const db = supabasePublic();
+  if (!db) return null;
+  try {
+    const { data, error } = await db
+      .from("home_section_outlets")
+      .select("*")
+      .order("category_sort", { ascending: true })
+      .order("sort_order", { ascending: true });
+    if (error) throw error;
+    if (!data) return null;
+
+    const map = new Map<string, HomeGroup>();
+    for (const row of data as HomeSectionRow[]) {
+      let group = map.get(row.category_slug);
+      if (!group) {
+        group = { outlets: [], total: row.category_total ?? 0 };
+        map.set(row.category_slug, group);
+      }
+      group.outlets.push({
+        id: row.id,
+        slug: row.slug,
+        category_slug: row.category_slug,
+        name: row.name,
+        name_bn: row.name_bn,
+        url: row.url,
+        logo_url: row.logo_url,
+        is_featured: row.is_featured ?? false,
+        open_external: row.open_external ?? false,
+        sort_order: row.sort_order ?? 0,
+        is_active: true,
+      });
+    }
+    return map;
+  } catch (e) {
+    console.warn(
+      "[queries] home_section_outlets unavailable (run migration 0010), using full-table path:",
+      e,
+    );
+    return null;
+  }
+});
+
+/**
+ * Homepage sections in order. `outlets` is already capped to each category's
+ * `home_limit`; `total` is the full count behind the "View all N" link.
+ */
 export async function getHomeSections(): Promise<HomeSection[]> {
-  const [cats, outlets] = await Promise.all([getAllCategories(), getAllOutlets()]);
+  const [cats, groups] = await Promise.all([getAllCategories(), fetchHomeGroups()]);
+  // Only reached when the view is unavailable; otherwise the whole outlets
+  // table is never loaded at all.
+  const all = groups ? null : await getAllOutlets();
+
   const sections = cats
     .filter((c) => c.home && !c.parent_slug)
     .sort((a, b) => a.sort_order - b.sort_order);
@@ -230,10 +320,25 @@ export async function getHomeSections(): Promise<HomeSection[]> {
         .sort((a, b) => a.sort_order - b.sort_order);
       return { category, outlets: [], children };
     }
-    const list = outlets
+
+    if (groups) {
+      const group = groups.get(category.slug);
+      return {
+        category,
+        outlets: group?.outlets ?? [],
+        total: group?.total ?? 0,
+      };
+    }
+
+    const list = (all ?? [])
       .filter((o) => o.category_slug === category.slug)
       .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
-    return { category, outlets: list };
+    const limit = category.home_limit ?? DEFAULT_HOME_LIMIT;
+    return {
+      category,
+      outlets: limit > 0 ? list.slice(0, limit) : list,
+      total: list.length,
+    };
   });
 }
 
@@ -263,17 +368,17 @@ export async function searchOutlets(query: string): Promise<Outlet[]> {
 /* Blog                                                                        */
 /* -------------------------------------------------------------------------- */
 
-async function fetchPosts(): Promise<Post[]> {
+async function fetchPosts(): Promise<PostCard[]> {
   const db = supabasePublic();
   if (!db) return [];
   try {
     const { data, error } = await db
       .from("posts")
-      .select("*")
+      .select(POST_CARD_COLS)
       .eq("published", true)
       .order("published_at", { ascending: false });
     if (error) throw error;
-    return (data ?? []) as Post[];
+    return (data ?? []) as PostCard[];
   } catch (e) {
     console.warn("[queries] posts DB read failed:", e);
     return [];
@@ -282,12 +387,30 @@ async function fetchPosts(): Promise<Post[]> {
 
 export const getPublishedPosts = cache(fetchPosts);
 
+/**
+ * The one article being rendered, body included. Targeted by slug rather than
+ * scanning the cached list: that list no longer carries `content`, and pulling
+ * every article's body to render one of them was the blog's worst read.
+ */
 export async function getPost(slug: string): Promise<Post | undefined> {
-  return (await getPublishedPosts()).find((p) => p.slug === slug);
+  const db = supabasePublic();
+  if (!db) return undefined;
+  try {
+    const { data } = await db
+      .from("posts")
+      .select("*")
+      .eq("slug", slug)
+      .eq("published", true)
+      .maybeSingle();
+    return (data as Post) ?? undefined;
+  } catch (e) {
+    console.warn("[queries] getPost failed:", e);
+    return undefined;
+  }
 }
 
 /** Blog cards for the homepage: featured (admin-ordered) first, else latest. */
-export async function getHomePosts(limit = 6): Promise<Post[]> {
+export async function getHomePosts(limit = 6): Promise<PostCard[]> {
   const posts = await getPublishedPosts();
   const featured = posts
     .filter((p) => p.featured)
@@ -300,7 +423,7 @@ export async function getHomePosts(limit = 6): Promise<Post[]> {
 export async function getRecentPosts(
   limit = 5,
   excludeSlug?: string,
-): Promise<Post[]> {
+): Promise<PostCard[]> {
   const posts = await getPublishedPosts();
   return posts.filter((p) => p.slug !== excludeSlug).slice(0, limit);
 }
@@ -309,7 +432,7 @@ export async function getRecentPosts(
 export async function getPopularPosts(
   limit = 5,
   excludeSlug?: string,
-): Promise<Post[]> {
+): Promise<PostCard[]> {
   const posts = await getPublishedPosts();
   return [...posts]
     .filter((p) => p.slug !== excludeSlug)

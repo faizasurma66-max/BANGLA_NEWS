@@ -2,28 +2,28 @@
 -- Run after schema.sql. Safe to re-run (on conflict do nothing).
 
 insert into public.categories
-  (slug,title,title_bn,description,section_type,parent_slug,group_key,sort_order,show_on_home,accent,is_active)
+  (slug,title,title_bn,description,section_type,parent_slug,group_key,sort_order,show_on_home,home_limit,accent,is_active)
 values
-  ('online-portals','Top Online Bangla News Portals','অনলাইন বাংলা নিউজ পোর্টাল','The most-read online news portals in Bangla. Since the nineties, online portals have become the fastest way Bengali-speaking readers follow breaking news, worldwide and at home.','outlet_grid',null,'portals',10,true,null,true),
-  ('national-newspapers','All Bangla Daily Newspapers','সকল বাংলা দৈনিক পত্রিকা','Since 1818, Bangla daily newspapers have grown in reach and reputation. This is the full index of national dailies covering politics, business, sport and culture 24/7.','outlet_grid',null,'newspapers',20,true,null,true),
-  ('local-newspaper','Local Newspaper by Division','বিভাগভিত্তিক স্থানীয় পত্রিকা','Bangladesh has eight divisions — Dhaka, Mymensingh, Sylhet, Chattogram, Rangpur, Khulna, Rajshahi and Barisal. Each has its own regional newspapers reporting local news around the clock.','division_grid',null,'regional',30,true,null,true),
-  ('tv-news','Bangla TV News Channels','বাংলা টিভি নিউজ চ্যানেল','The most-watched Bangla television news channels — live news, talk shows and breaking coverage from Bangladesh''s leading broadcasters.','outlet_grid',null,'tv',35,true,null,true),
-  ('fm-radio','Top Bangla FM Radio','শীর্ষ বাংলা এফএম রেডিও','FM radio is a popular medium for young Bengali listeners — entertainment, music and news. These stations broadcast in Bangla from across Bangladesh.','outlet_grid',null,'radio',40,true,null,true),
-  ('government-portals','Bangladesh Government Portals','বাংলাদেশ সরকারি পোর্টাল','Official government web portals of Bangladesh — the national portal and the ministries that publish public services, notices and information.','outlet_grid',null,'government',50,true,null,true),
-  ('job-portals','Popular Bangla Job Sites','জনপ্রিয় চাকরির সাইট','Job portals connect employers and job seekers. These are the most popular Bangladeshi job sites for finding work or hiring staff.','outlet_grid',null,'jobs',60,true,null,true),
-  ('english-newspapers','Bangladeshi English Newspapers','বাংলাদেশি ইংরেজি সংবাদপত্র','Leading English-language daily newspapers published from Bangladesh, widely read at home and by the diaspora.','outlet_grid',null,'english',70,true,null,true),
-  ('stock-market','Stock Market News','শেয়ার বাজার সংবাদ','Stock market and business news sources covering the Dhaka and Chittagong exchanges, listed companies and the wider economy.','outlet_grid',null,'stock',80,true,null,true),
-  ('assam-newspapers','Best Assam Newspapers','আসামের সেরা সংবাদপত্র','Assam, India is home to many Bengali-speaking readers. These well-known Assamese newspapers have a long history and wide readership.','outlet_grid',null,'assam',90,true,null,true),
-  ('epaper','Bangla ePaper Editions','বাংলা ই-পেপার','Digital replica ePaper editions of the major Bangla dailies — read the printed paper online, page by page.','outlet_grid',null,'epaper',100,true,null,true),
-  ('international-newspapers','International Newspapers','আন্তর্জাতিক সংবাদপত্র','Major international newspapers and global news sources in one place.','outlet_grid',null,'international',95,false,null,true),
-  ('dhaka-division','Dhaka Division','ঢাকা বিভাগ',null,'outlet_grid','local-newspaper','regional',1,false,'#E8A100',true),
-  ('mymensingh-division','Mymensingh Division','ময়মনসিংহ বিভাগ',null,'outlet_grid','local-newspaper','regional',2,false,'#E86FB0',true),
-  ('sylhet-division','Sylhet Division','সিলেট বিভাগ',null,'outlet_grid','local-newspaper','regional',3,false,'#DB4A24',true),
-  ('chattogram-division','Chattogram Division','চট্টগ্রাম বিভাগ',null,'outlet_grid','local-newspaper','regional',4,false,'#2BB6C9',true),
-  ('rangpur-division','Rangpur Division','রংপুর বিভাগ',null,'outlet_grid','local-newspaper','regional',5,false,'#7BC043',true),
-  ('khulna-division','Khulna Division','খুলনা বিভাগ',null,'outlet_grid','local-newspaper','regional',6,false,'#B57BE0',true),
-  ('rajshahi-division','Rajshahi Division','রাজশাহী বিভাগ',null,'outlet_grid','local-newspaper','regional',7,false,'#4AA3DB',true),
-  ('barisal-division','Barisal Division','বরিশাল বিভাগ',null,'outlet_grid','local-newspaper','regional',8,false,'#1E7BA8',true)
+  ('online-portals','Top Online Bangla News Portals','অনলাইন বাংলা নিউজ পোর্টাল','The most-read online news portals in Bangla. Since the nineties, online portals have become the fastest way Bengali-speaking readers follow breaking news, worldwide and at home.','outlet_grid',null,'portals',10,true,12,null,true),
+  ('national-newspapers','All Bangla Daily Newspapers','সকল বাংলা দৈনিক পত্রিকা','Since 1818, Bangla daily newspapers have grown in reach and reputation. This is the full index of national dailies covering politics, business, sport and culture 24/7.','outlet_grid',null,'newspapers',20,true,12,null,true),
+  ('local-newspaper','Local Newspaper by Division','বিভাগভিত্তিক স্থানীয় পত্রিকা','Bangladesh has eight divisions — Dhaka, Mymensingh, Sylhet, Chattogram, Rangpur, Khulna, Rajshahi and Barisal. Each has its own regional newspapers reporting local news around the clock.','division_grid',null,'regional',30,true,12,null,true),
+  ('tv-news','Bangla TV News Channels','বাংলা টিভি নিউজ চ্যানেল','The most-watched Bangla television news channels — live news, talk shows and breaking coverage from Bangladesh''s leading broadcasters.','outlet_grid',null,'tv',35,true,12,null,true),
+  ('fm-radio','Top Bangla FM Radio','শীর্ষ বাংলা এফএম রেডিও','FM radio is a popular medium for young Bengali listeners — entertainment, music and news. These stations broadcast in Bangla from across Bangladesh.','outlet_grid',null,'radio',40,true,12,null,true),
+  ('government-portals','Bangladesh Government Portals','বাংলাদেশ সরকারি পোর্টাল','Official government web portals of Bangladesh — the national portal and the ministries that publish public services, notices and information.','outlet_grid',null,'government',50,true,12,null,true),
+  ('job-portals','Popular Bangla Job Sites','জনপ্রিয় চাকরির সাইট','Job portals connect employers and job seekers. These are the most popular Bangladeshi job sites for finding work or hiring staff.','outlet_grid',null,'jobs',60,true,12,null,true),
+  ('english-newspapers','Bangladeshi English Newspapers','বাংলাদেশি ইংরেজি সংবাদপত্র','Leading English-language daily newspapers published from Bangladesh, widely read at home and by the diaspora.','outlet_grid',null,'english',70,true,12,null,true),
+  ('stock-market','Stock Market News','শেয়ার বাজার সংবাদ','Stock market and business news sources covering the Dhaka and Chittagong exchanges, listed companies and the wider economy.','outlet_grid',null,'stock',80,true,12,null,true),
+  ('assam-newspapers','Best Assam Newspapers','আসামের সেরা সংবাদপত্র','Assam, India is home to many Bengali-speaking readers. These well-known Assamese newspapers have a long history and wide readership.','outlet_grid',null,'assam',90,true,12,null,true),
+  ('epaper','Bangla ePaper Editions','বাংলা ই-পেপার','Digital replica ePaper editions of the major Bangla dailies — read the printed paper online, page by page.','outlet_grid',null,'epaper',100,true,12,null,true),
+  ('international-newspapers','International Newspapers','আন্তর্জাতিক সংবাদপত্র','Major international newspapers and global news sources in one place.','outlet_grid',null,'international',95,false,12,null,true),
+  ('dhaka-division','Dhaka Division','ঢাকা বিভাগ',null,'outlet_grid','local-newspaper','regional',1,false,12,'#E8A100',true),
+  ('mymensingh-division','Mymensingh Division','ময়মনসিংহ বিভাগ',null,'outlet_grid','local-newspaper','regional',2,false,12,'#E86FB0',true),
+  ('sylhet-division','Sylhet Division','সিলেট বিভাগ',null,'outlet_grid','local-newspaper','regional',3,false,12,'#DB4A24',true),
+  ('chattogram-division','Chattogram Division','চট্টগ্রাম বিভাগ',null,'outlet_grid','local-newspaper','regional',4,false,12,'#2BB6C9',true),
+  ('rangpur-division','Rangpur Division','রংপুর বিভাগ',null,'outlet_grid','local-newspaper','regional',5,false,12,'#7BC043',true),
+  ('khulna-division','Khulna Division','খুলনা বিভাগ',null,'outlet_grid','local-newspaper','regional',6,false,12,'#B57BE0',true),
+  ('rajshahi-division','Rajshahi Division','রাজশাহী বিভাগ',null,'outlet_grid','local-newspaper','regional',7,false,12,'#4AA3DB',true),
+  ('barisal-division','Barisal Division','বরিশাল বিভাগ',null,'outlet_grid','local-newspaper','regional',8,false,12,'#1E7BA8',true)
 on conflict (slug) do nothing;
 
 -- Outlets (linked to categories by slug)

@@ -1,4 +1,4 @@
-import { OutletCard } from "./outlet-card";
+import { OutletCard, COMPACT_GRID } from "./outlet-card";
 import type { Outlet } from "@/lib/types";
 
 /**
@@ -26,21 +26,25 @@ export function OutletGrid({
     );
   }
 
-  // Homepage: fixed 217px tracks, so a full row holds exactly as many whole
-  // tiles as fit (5 at the 1280px container, 6 on wider screens). Two flexible
-  // columns on phones, where a fixed 217px tile would strand a lot of space.
+  // Six newspapers per row on desktop. The count steps down on narrower
+  // screens (2 → 3 → 4 → 6) because a sixth of a phone viewport is unreadable.
   if (compact) {
     return (
-      <div className="grid grid-cols-2 justify-center gap-3 sm:[grid-template-columns:repeat(auto-fill,217px)]">
+      <div className={COMPACT_GRID}>
         {list.map((outlet) => (
-          <OutletCard key={outlet.id} outlet={outlet} compact />
+          <OutletCard
+            key={outlet.id}
+            outlet={outlet}
+            compact
+            shouldOpenExternal={globalOpenExternal}
+          />
         ))}
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-2 overflow-hidden rounded-xl border-l border-t border-line bg-surface sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+    <div className="grid grid-cols-2 overflow-hidden rounded-xl border-l border-t border-line bg-surface sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
       {list.map((outlet) => (
         <OutletCard
           key={outlet.id}

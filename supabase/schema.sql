@@ -18,6 +18,11 @@ create table if not exists public.categories (
   group_key    text not null default 'portals',
   sort_order   int  not null default 0,
   show_on_home boolean not null default false,
+  -- How many outlets this category previews on the homepage. Set per category
+  -- from the admin; 0 means "no cap — show every outlet". smallint because the
+  -- value is a display cap in the low hundreds, never an identifier.
+  home_limit   smallint not null default 12
+               check (home_limit >= 0 and home_limit <= 9999),
   accent       text,
   is_active    boolean not null default true,
   created_at   timestamptz not null default now()

@@ -2,7 +2,6 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getOutletByHandle } from "@/lib/queries";
 import { supabasePublic } from "@/lib/supabase/public";
-import { SiteHeader } from "@/components/site/site-header";
 import { ReaderBar } from "@/components/site/reader-bar";
 import { ClickBeacon } from "@/components/site/click-beacon";
 import { ExternalRedirect } from "@/components/site/external-redirect";
@@ -68,12 +67,12 @@ export default async function ReadPage({ params }: Params) {
     );
   }
 
-  // Embeddable sites: framed reader with the full site menu on top, then a slim
-  // reader bar (back / outlet name / open original), then the outlet iframe.
+  // Embeddable sites: the newspaper gets the whole screen. No site menu here —
+  // only the slim reader bar (back / outlet name / open original) above the
+  // frame, so the publisher's own navigation is what the reader interacts with.
   return (
     <div className="flex h-[100dvh] flex-col bg-band">
       <ClickBeacon id={outlet.id} />
-      <SiteHeader />
       <ReaderBar name={outlet.name} name_bn={outlet.name_bn} url={outlet.url} />
       <iframe
         src={outlet.url}

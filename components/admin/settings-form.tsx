@@ -20,8 +20,48 @@ import {
   ImageField,
 } from "./form-kit";
 import { ColorField } from "./color-field";
+import { RichEditor } from "./rich-editor";
+import { toRichTextHtml } from "@/lib/utils";
 import { Card, FormSection } from "./ui";
 import type { Settings } from "@/lib/settings";
+
+/**
+ * One footer page (About / Disclaimer / Privacy) with the same rich-text
+ * toolbar the blog editor uses — headings, bold, numbered and bulleted lists,
+ * alignment and justify. These used to be plain textareas, so none of that
+ * formatting was reachable; the HTML posts through a hidden input under `name`.
+ */
+function PageEditor({
+  label,
+  name,
+  defaultValue,
+  placeholder,
+  error,
+}: {
+  label: string;
+  name: string;
+  defaultValue: string;
+  placeholder: string;
+  error?: string;
+}) {
+  return (
+    <div>
+      <span className="mb-1.5 block text-[0.8125rem] font-semibold text-a-ink-soft">
+        {label}
+      </span>
+      <RichEditor
+        name={name}
+        // Copy written before this was a rich-text field is plain text; convert
+        // its blank-line paragraphs to real <p> tags or TipTap collapses them
+        // all into one and the next save persists the damage.
+        defaultValue={toRichTextHtml(defaultValue)}
+        placeholder={placeholder}
+        minHeight={240}
+      />
+      {error && <p className="mt-1.5 text-xs font-medium text-accent">{error}</p>}
+    </div>
+  );
+}
 
 export function SettingsForm({ settings }: { settings: Settings }) {
   const [state, action, pending] = useActionState<SettingsState, FormData>(
@@ -315,32 +355,29 @@ export function SettingsForm({ settings }: { settings: Settings }) {
         <div id="pages" className="scroll-mt-24">
           <FormSection
             title="ফুটার পেজের কনটেন্ট"
-            description="নিচের ঘরগুলো ফাঁকা রাখলে ওয়েবসাইটের ডিফল্ট লেখা দেখাবে। প্রতিটি অনুচ্ছেদের (paragraph) মাঝে একটা ফাঁকা লাইন দিলে সেগুলো আলাদা প্যারাগ্রাফ হিসেবে দেখাবে।"
+            description="About Us, Disclaimer ও Privacy Policy পেজের লেখা। ব্লগ পোস্টের মতোই টুলবার দিয়ে হেডিং, বোল্ড, ইটালিক, নাম্বার লিস্ট, বুলেট লিস্ট, মাঝ বরাবর (Align Center), দুই পাশ সমান (Justify), লিংক ও ছবি যোগ করা যাবে। ঘরটি ফাঁকা রাখলে ওয়েবসাইটের ডিফল্ট লেখা দেখাবে।"
             icon={FileText}
           >
-            <TextArea
+            <PageEditor
               label="About Us পেজের কনটেন্ট"
               name="page_about"
               defaultValue={settings.page_about}
               error={fe.page_about}
-              rows={6}
-              placeholder="All Newspaper Bangla is a directory site that compiles Bangla-language newspapers, online news portals, TV channels, e-papers, and many other kinds of sites from Bangladesh and India in one place, so readers can easily find what they need."
+              placeholder="আমাদের সম্পর্কে লিখুন — এই ডিরেক্টরিটি কী এবং কাদের জন্য।"
             />
-            <TextArea
+            <PageEditor
               label="Disclaimer পেজের কনটেন্ট"
               name="page_disclaimer"
               defaultValue={settings.page_disclaimer}
               error={fe.page_disclaimer}
-              rows={6}
-              placeholder="All newspaper, news portal, and channel links listed on this website are compiled purely for the convenience of readers…"
+              placeholder="দায়মুক্তি বিজ্ঞপ্তি লিখুন — লিংকগুলো কেন এবং কীভাবে সংকলন করা হয়েছে।"
             />
-            <TextArea
+            <PageEditor
               label="Privacy Policy পেজের কনটেন্ট"
               name="page_privacy"
               defaultValue={settings.page_privacy}
               error={fe.page_privacy}
-              rows={6}
-              placeholder="All information shown on this site is compiled for educational and directory purposes only…"
+              placeholder="গোপনীয়তা নীতি লিখুন — কী তথ্য সংগ্রহ করা হয় এবং কীভাবে ব্যবহৃত হয়।"
             />
           </FormSection>
         </div>

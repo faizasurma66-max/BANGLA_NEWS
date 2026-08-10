@@ -8,6 +8,7 @@ import { hasServiceRole } from "@/lib/env";
 import { supabaseAdmin, LOGO_BUCKET } from "@/lib/supabase/admin";
 import { outletInput, categoryInput, postInput } from "@/lib/validation";
 import { slugify } from "@/lib/seed-data";
+import { DEFAULT_HOME_LIMIT } from "@/lib/site-config";
 
 export type FormState = {
   error?: string;
@@ -37,7 +38,11 @@ function bool(formData: FormData, key: string): boolean {
 }
 
 function num(formData: FormData, key: string, fallback = 0): number {
-  const n = Number(formData.get(key));
+  // A missing or blank box means "unchanged/default", not zero — `Number("")`
+  // is 0, which would silently reset a field the form never rendered.
+  const raw = formData.get(key);
+  if (raw === null || String(raw).trim() === "") return fallback;
+  const n = Number(raw);
   return Number.isFinite(n) ? n : fallback;
 }
 
@@ -240,12 +245,14 @@ export async function upsertCategory(
     accent: formData.get("accent") ?? "",
     sort_order: num(formData, "sort_order"),
     show_on_home: bool(formData, "show_on_home"),
+    home_limit: num(formData, "home_limit", DEFAULT_HOME_LIMIT),
     is_active: bool(formData, "is_active"),
   });
   if (!parsed.success) {
     return { error: "নিচের ভুলগুলো ঠিক করুন।", fieldErrors: collectFieldErrors(parsed.error.issues) };
   }
   const d = parsed.data;
+  let missingHomeLimit = false;
 
   try {
     const sb = supabaseAdmin();
@@ -260,15 +267,27 @@ export async function upsertCategory(
       accent: d.accent || null,
       sort_order: d.sort_order,
       show_on_home: d.show_on_home,
+      home_limit: d.home_limit,
       is_active: d.is_active,
     };
     const originalSlug = String(formData.get("original_slug") ?? "");
-    if (originalSlug) {
-      const { error } = await sb.from("categories").update(row).eq("slug", originalSlug);
-      if (error) throw error;
-    } else {
-      const { error } = await sb.from("categories").insert(row);
-      if (error) throw error;
+
+    const write = (values: Record<string, unknown>) =>
+      originalSlug
+        ? sb.from("categories").update(values).eq("slug", originalSlug)
+        : sb.from("categories").insert(values);
+
+    const { error } = await write(row);
+    if (error) {
+      // `home_limit` arrives with migration 0009. On a database that has not
+      // run it yet, save everything else rather than losing the whole edit,
+      // and tell the client why the homepage cap did not stick.
+      if (!/home_limit/i.test(error.message)) throw error;
+      const withoutLimit: Record<string, unknown> = { ...row };
+      delete withoutLimit.home_limit;
+      const retry = await write(withoutLimit);
+      if (retry.error) throw retry.error;
+      missingHomeLimit = true;
     }
   } catch (e) {
     console.error("[admin] upsertCategory failed:", e);
@@ -276,6 +295,12 @@ export async function upsertCategory(
   }
 
   refreshDirectory();
+  if (missingHomeLimit) {
+    return {
+      error:
+        "ক্যাটাগরিটি সংরক্ষণ হয়েছে, কিন্তু “হোমপেজে সর্বোচ্চ কতটি সাইট দেখাবে” সংখ্যাটি সংরক্ষণ করা যায়নি। Supabase-এ supabase/migrations/0009_category_home_limit.sql মাইগ্রেশনটি চালান, তারপর আবার চেষ্টা করুন।",
+    };
+  }
   redirect("/admin/categories");
 }
 

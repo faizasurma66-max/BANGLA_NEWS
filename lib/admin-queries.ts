@@ -10,6 +10,7 @@ import {
   type SettingKey,
   type Settings,
 } from "@/lib/settings";
+import { DEFAULT_HOME_LIMIT } from "@/lib/site-config";
 import type { Category, Post, Submission } from "@/lib/types";
 
 export type AdminOutlet = {
@@ -125,6 +126,7 @@ export async function adminListCategories(): Promise<Category[]> {
     group: r.group_key,
     sort_order: r.sort_order ?? 0,
     home: r.show_on_home ?? false,
+    home_limit: r.home_limit ?? DEFAULT_HOME_LIMIT,
     accent: r.accent,
     is_active: r.is_active ?? true,
   }));

@@ -130,6 +130,49 @@ export function isHtmlContent(content: string): boolean {
   );
 }
 
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+/**
+ * Prepare stored page copy for the rich-text editor.
+ *
+ * Content saved before the editor existed is plain text whose paragraphs are
+ * blank lines. TipTap parses its `content` as HTML, and HTML collapses
+ * whitespace — handing it the raw string turns every page into one unbroken
+ * block, and the next save writes that back. Wrapping the paragraphs in real
+ * <p> tags first is what makes the upgrade lossless. Content that is already
+ * HTML passes straight through.
+ */
+export function toRichTextHtml(value: string): string {
+  if (!value.trim()) return "";
+  if (isHtmlContent(value)) return value;
+  return value
+    .split(/\r?\n\s*\r?\n/)
+    .map((block) => block.trim())
+    .filter(Boolean)
+    // A lone newline inside a block is a soft break, not a new paragraph.
+    .map((block) => `<p>${escapeHtml(block).replace(/\r?\n/g, "<br>")}</p>`)
+    .join("");
+}
+
+/**
+ * Whether rich-text content is effectively empty. A cleared TipTap editor still
+ * posts `<p></p>`, which is truthy — without this the footer pages would render
+ * a blank article instead of falling back to their default copy.
+ */
+export function isBlankRichText(content: string): boolean {
+  if (!content.trim()) return true;
+  // Media counts as content even with no text around it.
+  if (/<(?:img|iframe|hr|table)[\s>/]/i.test(content)) return false;
+  return (
+    content
+      .replace(/<[^>]*>/g, "")
+      .replace(/&nbsp;/gi, " ")
+      .trim().length === 0
+  );
+}
+
 export function hostname(url: string): string {
   try {
     return new URL(url).hostname.replace(/^www\./, "");

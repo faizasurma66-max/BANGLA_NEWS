@@ -5,7 +5,7 @@ import { FolderTree, LayoutGrid, Palette } from "lucide-react";
 import { upsertCategory, type FormState } from "@/lib/actions/admin";
 import { Field, TextArea, Select, Checkbox, SubmitBar, ErrorBanner } from "./form-kit";
 import { Card, CardDivider, FormSection } from "./ui";
-import { GROUPS } from "@/lib/site-config";
+import { GROUPS, DEFAULT_HOME_LIMIT } from "@/lib/site-config";
 import type { Category } from "@/lib/types";
 
 export function CategoryForm({ category }: { category: Category | null }) {
@@ -130,6 +130,14 @@ export function CategoryForm({ category }: { category: Category | null }) {
               hint="বন্ধ করলে সাইটের কোথাও দেখাবে না"
             />
           </div>
+          <Field
+            label="হোমপেজে সর্বোচ্চ কতটি সাইট দেখাবে"
+            name="home_limit"
+            type="number"
+            defaultValue={category?.home_limit ?? DEFAULT_HOME_LIMIT}
+            error={fe.home_limit}
+            hint="প্রতিটি ক্যাটাগরির জন্য আলাদা করে ঠিক করা যায় — একটিতে ১০, আরেকটিতে ৩০, আরেকটিতে ৫০। ০ দিলে ওই ক্যাটাগরির সব সাইট হোমপেজে দেখাবে। এক সারিতে ৬টি করে সাইট বসে।"
+          />
         </FormSection>
 
         <SubmitBar

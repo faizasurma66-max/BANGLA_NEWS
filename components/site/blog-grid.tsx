@@ -1,9 +1,9 @@
 import { Newspaper } from "lucide-react";
 import { BlogCard } from "@/components/site/blog-card";
-import type { Post } from "@/lib/types";
+import type { PostCard } from "@/lib/types";
 
 /** Grid of blog cards. Each card links to its full article page. */
-export function BlogGrid({ posts }: { posts: Post[] }) {
+export function BlogGrid({ posts }: { posts: PostCard[] }) {
   if (posts.length === 0) {
     return (
       <div className="mx-auto max-w-md rounded-2xl border border-dashed border-line bg-surface px-6 py-16 text-center">

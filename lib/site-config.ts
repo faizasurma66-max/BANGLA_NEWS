@@ -30,6 +30,13 @@ export const GROUPS = {
 
 export type GroupKey = keyof typeof GROUPS;
 
+/**
+ * Fallback for a category that has never had its homepage cap set (a row from
+ * before migration 0009, or the bundled seed dataset). Each category overrides
+ * it from the admin — `0` there means "show every outlet".
+ */
+export const DEFAULT_HOME_LIMIT = 12;
+
 /** Primary nav shown in the header (dropdowns are built from live categories). */
 export const PRIMARY_NAV = [
   { label: "Home", href: "/" },

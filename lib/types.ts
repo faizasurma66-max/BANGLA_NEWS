@@ -14,6 +14,12 @@ export interface Category {
   sort_order: number;
   /** Whether this category renders as a section on the homepage. */
   home?: boolean;
+  /**
+   * How many outlets this category shows on the homepage. Set per category from
+   * the admin, so one section can preview 10 and the next 50. `0` means "no
+   * cap — show every outlet in the category".
+   */
+  home_limit?: number;
   /** Optional tile background (used by division tiles). */
   accent?: string | null;
   is_active?: boolean;
@@ -68,9 +74,23 @@ export interface Post {
   updated_at: string;
 }
 
-/** A homepage section: a category plus its resolved outlets (or child divisions). */
+/**
+ * A post as the listings render it. `content` is deliberately absent: the blog
+ * grid, sidebar and homepage preview never read it, and loading every article's
+ * body just to show its title is the one query whose cost grows without bound
+ * as the blog fills up. Only the article page fetches the full `Post`.
+ */
+export type PostCard = Omit<Post, "content">;
+
+/**
+ * A homepage section: a category plus the outlets it displays (already capped
+ * to the category's `home_limit`) or its child divisions. `total` is how many
+ * active outlets the category holds in all, for the "View all N" link — the
+ * page needs the number without needing the rows.
+ */
 export interface HomeSection {
   category: Category;
   outlets: Outlet[];
+  total?: number;
   children?: Category[];
 }

@@ -19,19 +19,24 @@ export async function SiteFooter() {
   const appUrl = settings.app_download_url.trim();
 
   return (
-    <footer className="mt-24 border-t border-line bg-surface">
+    // `mt-auto` is what pins the footer to the bottom of the page: the site
+    // layout is a full-height flex column, so on a short page (About, 404, an
+    // empty search) the leftover space collapses above the footer instead of
+    // leaving it stranded mid-screen. A fixed `mt-24` used to push the whole
+    // column past the viewport and produce a phantom scrollbar.
+    <footer className="mt-auto border-t border-footer-line bg-footer text-ink">
       <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
         <div className="grid gap-10 lg:grid-cols-[1.4fr_2fr]">
           <div className="max-w-sm">
             <Logo src={settings.site_logo || null} name={settings.site_name} />
-            <p className="mt-4 text-sm leading-relaxed text-muted">
+            <p className="mt-4 text-sm leading-relaxed text-ink-soft">
               {settings.meta_description || SITE.description}
             </p>
 
             <div className="mt-5 flex flex-wrap items-center gap-2">
               <Link
                 href="/submit"
-                className="inline-flex items-center gap-1.5 rounded-full border border-line px-4 py-2 text-sm font-medium text-ink transition hover:border-accent hover:text-accent"
+                className="inline-flex items-center gap-1.5 rounded-full border border-footer-line bg-surface px-4 py-2 text-sm font-medium text-ink transition hover:border-accent hover:text-accent"
               >
                 Submit your site
               </Link>
@@ -57,7 +62,7 @@ export async function SiteFooter() {
                     rel="noreferrer"
                     aria-label={s.label}
                     title={s.label}
-                    className="grid h-9 w-9 place-items-center rounded-full border border-line text-muted transition hover:border-accent hover:bg-accent-soft hover:text-accent"
+                    className="grid h-9 w-9 place-items-center rounded-full border border-footer-line bg-surface text-ink-soft transition hover:border-accent hover:bg-accent-soft hover:text-accent"
                   >
                     <SocialIcon name={s.key} />
                   </a>
@@ -99,11 +104,11 @@ export async function SiteFooter() {
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col items-start justify-between gap-3 border-t border-line pt-6 text-sm text-muted sm:flex-row sm:items-center">
+        <div className="mt-12 flex flex-col items-start justify-between gap-3 border-t border-footer-line pt-6 text-sm text-ink-soft sm:flex-row sm:items-center">
           <p>
             © {new Date().getFullYear()} {settings.site_name}. A curated Bangla media index.
           </p>
-          <p className="text-xs text-faint">
+          <p className="text-xs text-muted">
             Logos and trademarks belong to their respective owners.
           </p>
         </div>
@@ -115,7 +120,7 @@ export async function SiteFooter() {
 function FooterCol({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <h3 className="text-xs font-semibold uppercase tracking-wider text-faint">{title}</h3>
+      <h3 className="text-xs font-semibold uppercase tracking-wider text-muted">{title}</h3>
       <ul className="mt-4 space-y-2.5">{children}</ul>
     </div>
   );

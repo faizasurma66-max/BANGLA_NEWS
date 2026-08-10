@@ -28,10 +28,12 @@ export function SectionHeader({
             </span>
           </div>
         )}
-        <h2 className="font-serif text-2xl font-semibold leading-tight tracking-tight text-ink sm:text-[1.75rem]">
+        {/* Deliberately understated: the newspaper tiles are the content here,
+            so the category heading sits a step below them in the hierarchy. */}
+        <h2 className="font-serif text-lg font-semibold leading-tight tracking-tight text-ink sm:text-xl">
           {title}
           {titleBn && (
-            <span className="ml-2 align-middle font-bangla text-lg font-normal text-muted">
+            <span className="ml-2 align-middle font-bangla text-sm font-normal text-muted">
               {titleBn}
             </span>
           )}

@@ -18,6 +18,10 @@
   --color-line: #e7e8ec; /* hairline borders */
   --color-line-strong: #d6d8de;
 
+  /* footer — a solid grey slab that closes the page off from the white canvas */
+  --color-footer: #d9d9d9;
+  --color-footer-line: #bcbcc0; /* dividers that stay visible on the grey */
+
   /* brand accent — single refined red, used sparingly */
   --color-accent: #c8102e;
   --color-accent-dark: #9c0c23;

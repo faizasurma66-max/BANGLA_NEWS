@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Newspaper, Eye, Clock, Flame, FolderOpen } from "lucide-react";
 import { formatDate } from "@/lib/utils";
-import type { Post } from "@/lib/types";
+import type { PostCard } from "@/lib/types";
 import type { CategoryCount } from "@/lib/queries";
 
 /**
@@ -15,8 +15,8 @@ export function BlogSidebar({
   recent,
   categories,
 }: {
-  popular: Post[];
-  recent: Post[];
+  popular: PostCard[];
+  recent: PostCard[];
   categories: CategoryCount[];
 }) {
   return (
@@ -102,7 +102,7 @@ function Widget({
   );
 }
 
-function PostRow({ post, showViews }: { post: Post; showViews?: boolean }) {
+function PostRow({ post, showViews }: { post: PostCard; showViews?: boolean }) {
   return (
     <li>
       <Link

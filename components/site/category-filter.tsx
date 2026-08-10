@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
-import { OutletCard } from "./outlet-card";
+import { OutletCard, COMPACT_GRID } from "./outlet-card";
 import type { Outlet } from "@/lib/types";
 
 export function CategoryFilter({
@@ -47,9 +47,14 @@ export function CategoryFilter({
           No outlets match “{q}”.
         </p>
       ) : (
-        <div className="grid grid-cols-2 justify-center gap-3 sm:[grid-template-columns:repeat(auto-fill,217px)]">
+        <div className={COMPACT_GRID}>
           {filtered.map((o) => (
-            <OutletCard key={o.id} outlet={o} compact />
+            <OutletCard
+              key={o.id}
+              outlet={o}
+              compact
+              shouldOpenExternal={globalOpenExternal}
+            />
           ))}
         </div>
       )}

@@ -4,6 +4,7 @@ import {
   getAllCategories,
   getCategory,
   getOutletsByCategory,
+  getDefaultOpenExternal,
 } from "@/lib/queries";
 import { PageHero } from "@/components/site/page-hero";
 import { CategoryFilter } from "@/components/site/category-filter";
@@ -35,7 +36,10 @@ export default async function DivisionPage({ params }: Params) {
   const category = await getCategory(division);
   if (!category || category.parent_slug !== "local-newspaper") notFound();
 
-  const outlets = await getOutletsByCategory(division);
+  const [outlets, globalOpenExternal] = await Promise.all([
+    getOutletsByCategory(division),
+    getDefaultOpenExternal(),
+  ]);
 
   return (
     <>
@@ -55,7 +59,7 @@ export default async function DivisionPage({ params }: Params) {
         }
       />
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <CategoryFilter outlets={outlets} />
+        <CategoryFilter outlets={outlets} globalOpenExternal={globalOpenExternal} />
       </div>
     </>
   );
