@@ -49,9 +49,7 @@ export default async function HomePage() {
               title={category.title}
               titleBn={category.title_bn}
               href={`/category/${category.slug}`}
-              hrefLabel={
-                outlets.length < allCount ? `View all ${allCount}` : "Open"
-              }
+              hrefLabel={`View all ${allCount}`}
             />
             <div className="mt-5">
               <OutletGrid

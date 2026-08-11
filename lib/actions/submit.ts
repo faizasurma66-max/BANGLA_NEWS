@@ -3,6 +3,10 @@
 import { submissionInput } from "@/lib/validation";
 import { hasServiceRole } from "@/lib/env";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { uploadImageField } from "@/lib/uploads";
+
+/** Public uploads get a tighter cap than the admin's 8 MB. */
+const MAX_LOGO_BYTES = 2 * 1024 * 1024;
 
 export type SubmitState = {
   ok: boolean;
@@ -25,6 +29,7 @@ export async function submitSite(
     url: formData.get("url"),
     category_suggestion: formData.get("category_suggestion") ?? "",
     submitter_email: formData.get("submitter_email") ?? "",
+    submitter_phone: formData.get("submitter_phone") ?? "",
     notes: formData.get("notes") ?? "",
   });
 
@@ -41,15 +46,51 @@ export async function submitSite(
 
   const data = parsed.data;
 
+  // This form is public and unauthenticated, so the logo is checked here rather
+  // than trusting the browser: images only, and a tighter cap than the admin's
+  // 8 MB. Anything rejected fails the submission instead of being dropped
+  // silently, so the sender knows their logo did not arrive.
+  const logo = formData.get("logo_file");
+  if (logo instanceof File && logo.size > 0) {
+    if (!logo.type.startsWith("image/")) {
+      return {
+        ok: false,
+        error: "Please upload the logo as an image file.",
+        fieldErrors: { logo_file: "Images only (PNG, JPG, WEBP or GIF)." },
+      };
+    }
+    if (logo.size > MAX_LOGO_BYTES) {
+      return {
+        ok: false,
+        error: "That logo is too large.",
+        fieldErrors: { logo_file: "Maximum size is 2 MB." },
+      };
+    }
+  }
+
   if (hasServiceRole()) {
     try {
+      let logoUrl: string | null = null;
+      try {
+        logoUrl = await uploadImageField(formData, "logo_file", "submissions");
+      } catch (e) {
+        console.error("[submit] logo upload failed:", e);
+        return {
+          ok: false,
+          error: "We couldn't upload that logo. Try a smaller file, or submit without one.",
+          fieldErrors: { logo_file: "Upload failed." },
+        };
+      }
+
       const { error } = await supabaseAdmin()
         .from("submissions")
         .insert({
           outlet_name: data.outlet_name,
           url: data.url,
           category_suggestion: data.category_suggestion || null,
+          logo_url: logoUrl,
           submitter_email: data.submitter_email || null,
+          submitter_phone: data.submitter_phone || null,
           notes: data.notes || null,
           status: "pending",
         });

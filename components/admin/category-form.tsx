@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { FolderTree, LayoutGrid, Palette } from "lucide-react";
+import { toSlug } from "@/lib/utils";
 import { upsertCategory, type FormState } from "@/lib/actions/admin";
 import { Field, TextArea, Select, Checkbox, SubmitBar, ErrorBanner } from "./form-kit";
 import { Card, CardDivider, FormSection } from "./ui";
@@ -11,6 +12,17 @@ import type { Category } from "@/lib/types";
 export function CategoryForm({ category }: { category: Category | null }) {
   const [state, action, pending] = useActionState<FormState, FormData>(upsertCategory, {});
   const fe = state.fieldErrors ?? {};
+
+  // Slug mirrors the title until the admin edits it themselves. An existing
+  // category counts as edited, so renaming one never silently moves its URL.
+  const [title, setTitle] = useState(category?.title ?? "");
+  const [slug, setSlug] = useState(category?.slug ?? "");
+  const [slugTouched, setSlugTouched] = useState(Boolean(category?.slug));
+
+  const onTitle = (v: string) => {
+    setTitle(v);
+    if (!slugTouched) setSlug(toSlug(v));
+  };
 
   return (
     <form action={action}>
@@ -28,7 +40,8 @@ export function CategoryForm({ category }: { category: Category | null }) {
               label="শিরোনাম"
               name="title"
               required
-              defaultValue={category?.title}
+              value={title}
+              onChange={onTitle}
               error={fe.title}
               placeholder="Top Online Bangla News Portals"
             />
@@ -40,13 +53,16 @@ export function CategoryForm({ category }: { category: Category | null }) {
               placeholder="অনলাইন বাংলা নিউজ পোর্টাল"
             />
             <Field
-              label="Slug"
+              label="Slug (ঐচ্ছিক)"
               name="slug"
-              required
               dir="ltr"
-              defaultValue={category?.slug}
+              value={slug}
+              onChange={(v) => {
+                setSlug(v);
+                setSlugTouched(true);
+              }}
               error={fe.slug}
-              hint="ছোট হাতের ইংরেজি অক্ষর ও হাইফেন — যেমন online-portals"
+              hint="ফাঁকা রাখলে শিরোনাম থেকে নিজে থেকেই তৈরি হবে। বড় হাতের অক্ষর ও একাধিক শব্দ লিখলেও চলবে — সংরক্ষণের সময় ঠিক করে নেওয়া হবে।"
               placeholder="online-portals"
             />
             <Field

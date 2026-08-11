@@ -20,7 +20,6 @@ export default async function LocalPage() {
   return (
     <>
       <PageHero
-        breadcrumb={[{ label: "Home", href: "/" }, { label: "Local Newspaper" }]}
         kicker="Regional"
         title={parent?.title ?? "Local Newspaper by Division"}
         titleBn={parent?.title_bn}

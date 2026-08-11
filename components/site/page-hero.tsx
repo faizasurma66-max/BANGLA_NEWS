@@ -19,7 +19,7 @@ export function PageHero({
   accent?: string | null;
 }) {
   return (
-    <section className="border-b border-line bg-band/50">
+    <section className="border-b border-line bg-surface">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
         {breadcrumb && breadcrumb.length > 0 && (
           <nav aria-label="Breadcrumb" className="mb-4">

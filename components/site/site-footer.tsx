@@ -6,11 +6,23 @@ import { Logo } from "./logo";
 import { SocialIcon } from "./social-icons";
 import { SITE } from "@/lib/site-config";
 
+/**
+ * Categories kept out of the footer's Directory column. They stay in the
+ * header mega-menu and on their own pages — the footer list is a shortlist,
+ * not an index of everything.
+ */
+const FOOTER_HIDDEN = new Set([
+  "local-newspaper", // has its own "Local Newspapers" entry under Explore
+  "stock-market", // All Share Bazar Newspapers
+  "bangla-magazine", // All Bangla Magazine
+  "fm-radio", // Top Bangla FM Radio
+]);
+
 export async function SiteFooter() {
   const [cats, settings] = await Promise.all([getAllCategories(), getSiteSettings()]);
 
   const columns = cats
-    .filter((c) => !c.parent_slug && c.slug !== "local-newspaper")
+    .filter((c) => !c.parent_slug && !FOOTER_HIDDEN.has(c.slug))
     .sort((a, b) => a.sort_order - b.sort_order)
     .slice(0, 8);
 

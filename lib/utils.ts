@@ -130,6 +130,28 @@ export function isHtmlContent(content: string): boolean {
   );
 }
 
+/**
+ * Normalise anything a human types into a URL slug.
+ *
+ * Accepts what people actually type — "Khulna Division News", mixed case,
+ * punctuation — and returns "khulna-division-news". Unlike the ASCII-only
+ * `slugify` in seed-data.ts this keeps Unicode letters, so a Bangla title
+ * yields a Bangla slug instead of an empty string.
+ *
+ * Returns "" for input with no letters or digits at all, which callers treat
+ * as "fall back to the title".
+ */
+export function toSlug(input: string): string {
+  return input
+    .normalize("NFC")
+    .toLowerCase()
+    .replace(/['’"]/g, "")
+    // \p{M} matters as much as \p{L}: Bengali vowel signs are combining marks,
+    // so without it "খুলনা বিভাগ" shreds into "খ-লন-ব-ভ-গ".
+    .replace(/[^\p{L}\p{N}\p{M}]+/gu, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 function escapeHtml(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }

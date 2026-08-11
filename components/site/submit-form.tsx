@@ -75,6 +75,33 @@ export function SubmitForm({
 
         <Field label="Your email (optional)" name="submitter_email" error={state.fieldErrors?.submitter_email} placeholder="you@example.com" type="email" />
 
+        <Field
+          label="Your mobile number (optional)"
+          name="submitter_phone"
+          error={state.fieldErrors?.submitter_phone}
+          placeholder="+880 1XXX-XXXXXX"
+          type="tel"
+        />
+
+        <div className="sm:col-span-2">
+          <Label htmlFor="logo_file">Site logo (optional)</Label>
+          <input
+            id="logo_file"
+            name="logo_file"
+            type="file"
+            accept="image/*"
+            aria-invalid={!!state.fieldErrors?.logo_file}
+            className="mt-1.5 w-full cursor-pointer rounded-xl border border-dashed border-line bg-paper px-3.5 py-3 text-sm text-muted outline-none transition file:mr-3 file:cursor-pointer file:rounded-full file:border-0 file:bg-ink file:px-4 file:py-1.5 file:text-sm file:font-medium file:text-white hover:border-accent focus:border-accent"
+          />
+          {state.fieldErrors?.logo_file ? (
+            <ErrorText>{state.fieldErrors.logo_file}</ErrorText>
+          ) : (
+            <p className="mt-1.5 text-xs text-faint">
+              Logo size: 300&times;65 &middot; PNG, JPG, WEBP or GIF, up to 2&nbsp;MB.
+            </p>
+          )}
+        </div>
+
         <div className="sm:col-span-2">
           <Label htmlFor="notes">Notes (optional)</Label>
           <textarea

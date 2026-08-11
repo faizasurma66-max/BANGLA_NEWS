@@ -20,7 +20,6 @@ export default async function EpaperPage() {
   return (
     <>
       <PageHero
-        breadcrumb={[{ label: "Home", href: "/" }, { label: "Bangla ePaper" }]}
         kicker="Digital Editions"
         title={category?.title ?? "Bangla ePaper Editions"}
         titleBn={category?.title_bn}

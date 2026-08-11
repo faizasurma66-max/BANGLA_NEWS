@@ -7,7 +7,7 @@ import { TextArea, Checkbox, SubmitBar, ErrorBanner } from "./form-kit";
 import { RichEditor } from "./rich-editor";
 import { CoverImageField } from "./cover-image-field";
 import { Card, CardDivider, FormSection } from "./ui";
-import { slugify } from "@/lib/seed-data";
+import { toSlug } from "@/lib/utils";
 import type { Post } from "@/lib/types";
 
 export function PostForm({ post }: { post: Post | null }) {
@@ -20,7 +20,7 @@ export function PostForm({ post }: { post: Post | null }) {
 
   const onTitle = (v: string) => {
     setTitle(v);
-    if (!slugTouched) setSlug(slugify(v));
+    if (!slugTouched) setSlug(toSlug(v));
   };
 
   return (
@@ -51,7 +51,7 @@ export function PostForm({ post }: { post: Post | null }) {
 
             <div>
               <label htmlFor="slug" className="mb-1.5 block text-[0.8125rem] font-semibold text-a-ink-soft">
-                Slug <span className="text-accent">*</span>
+                Slug <span className="font-normal text-a-faint">(ঐচ্ছিক)</span>
               </label>
               <input
                 id="slug"
@@ -70,7 +70,8 @@ export function PostForm({ post }: { post: Post | null }) {
                 <p className="mt-1.5 text-xs font-medium text-accent">{fe.slug}</p>
               ) : (
                 <p className="mt-1.5 text-xs text-a-faint">
-                  শিরোনাম থেকে নিজে থেকেই তৈরি হয় — ছোট হাতের অক্ষর ও হাইফেন।
+                  ফাঁকা রাখলে শিরোনাম থেকে নিজে থেকেই তৈরি হবে। বড় হাতের অক্ষর ও
+                  একাধিক শব্দ লিখলেও চলবে — সংরক্ষণের সময় ঠিক করে নেওয়া হবে।
                 </p>
               )}
             </div>

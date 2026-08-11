@@ -52,6 +52,7 @@ export interface Submission {
   category_suggestion?: string | null;
   logo_url?: string | null;
   submitter_email?: string | null;
+  submitter_phone?: string | null;
   notes?: string | null;
   status: SubmissionStatus;
   created_at: string;

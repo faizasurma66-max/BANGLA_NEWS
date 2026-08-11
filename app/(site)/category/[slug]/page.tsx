@@ -45,11 +45,6 @@ export default async function CategoryPage({ params }: Params) {
   return (
     <>
       <PageHero
-        breadcrumb={[
-          { label: "Home", href: "/" },
-          { label: "Directory" },
-          { label: category.title },
-        ]}
         kicker={GROUPS[category.group]}
         title={category.title}
         titleBn={category.title_bn}

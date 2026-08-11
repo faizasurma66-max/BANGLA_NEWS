@@ -37,11 +37,18 @@ export type GroupKey = keyof typeof GROUPS;
  */
 export const DEFAULT_HOME_LIMIT = 12;
 
-/** Primary nav shown in the header (dropdowns are built from live categories). */
+/** Header links shown before the category dropdowns. */
 export const PRIMARY_NAV = [
   { label: "Home", href: "/" },
   { label: "Blog", href: "/blog" },
   { label: "Bangla ePaper", href: "/epaper" },
+] as const;
+
+/**
+ * Header links shown *after* the dropdowns, so they sit to the right of
+ * "Local Newspaper" rather than ahead of it.
+ */
+export const TRAILING_NAV = [
   { label: "International Newspaper", href: "/category/international-newspapers" },
 ] as const;
 

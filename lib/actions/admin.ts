@@ -8,6 +8,7 @@ import { hasServiceRole } from "@/lib/env";
 import { supabaseAdmin, LOGO_BUCKET } from "@/lib/supabase/admin";
 import { outletInput, categoryInput, postInput } from "@/lib/validation";
 import { slugify } from "@/lib/seed-data";
+import { toSlug } from "@/lib/utils";
 import { DEFAULT_HOME_LIMIT } from "@/lib/site-config";
 
 export type FormState = {
@@ -44,6 +45,17 @@ function num(formData: FormData, key: string, fallback = 0): number {
   if (raw === null || String(raw).trim() === "") return fallback;
   const n = Number(raw);
   return Number.isFinite(n) ? n : fallback;
+}
+
+/**
+ * The slug to save: the slug box if it holds anything usable, otherwise the
+ * title. Both are pushed through `toSlug`, so "Khulna Division News" and
+ * "khulna-division-news" are equivalent and a blank box is not an error.
+ */
+function derivedSlug(formData: FormData, titleField: string): string {
+  const typed = toSlug(String(formData.get("slug") ?? ""));
+  if (typed) return typed;
+  return toSlug(String(formData.get(titleField) ?? ""));
 }
 
 function collectFieldErrors(
@@ -234,8 +246,10 @@ export async function upsertCategory(
   const blocked = await ensureCanWrite("categories");
   if (blocked) return { error: blocked };
 
+  // The slug box is optional and free-form: whatever is typed gets normalised,
+  // and an empty box inherits the title.
   const parsed = categoryInput.safeParse({
-    slug: formData.get("slug"),
+    slug: derivedSlug(formData, "title"),
     title: formData.get("title"),
     title_bn: formData.get("title_bn") ?? "",
     description: formData.get("description") ?? "",
@@ -372,6 +386,8 @@ export async function approveSubmission(formData: FormData) {
         category_id: cat.id,
         name: sub.outlet_name,
         url: sub.url,
+        // Carry over the logo the submitter uploaded, if any.
+        logo_url: sub.logo_url ?? null,
         is_active: true,
         sort_order: 999,
       });
@@ -407,7 +423,7 @@ export async function upsertPost(
 
   const parsed = postInput.safeParse({
     title: formData.get("title"),
-    slug: formData.get("slug"),
+    slug: derivedSlug(formData, "title"),
     excerpt: formData.get("excerpt") ?? "",
     content: formData.get("content"),
     cover_image: formData.get("cover_image") ?? "",

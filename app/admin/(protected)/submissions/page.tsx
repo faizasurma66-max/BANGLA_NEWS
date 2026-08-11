@@ -1,4 +1,4 @@
-import { Check, X, ExternalLink, Inbox, Mail, CalendarDays } from "lucide-react";
+import { Check, X, ExternalLink, Inbox, Mail, Phone, CalendarDays } from "lucide-react";
 import { adminListSubmissions, adminListCategories } from "@/lib/admin-queries";
 import { approveSubmission, rejectSubmission } from "@/lib/actions/admin";
 import { requireSection } from "@/lib/auth";
@@ -57,6 +57,14 @@ export default async function SubmissionsPage() {
           {pending.map((s) => (
             <Card key={s.id}>
               <div className="flex flex-wrap items-start justify-between gap-3">
+                {s.logo_url && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={s.logo_url}
+                    alt=""
+                    className="h-[52px] w-[120px] shrink-0 rounded-[var(--radius-a-sm)] border border-a-line bg-a-sunken object-contain"
+                  />
+                )}
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <h2 className="text-[0.9375rem] font-bold text-a-ink">{s.outlet_name}</h2>
@@ -83,6 +91,15 @@ export default async function SubmissionsPage() {
                       <span className="inline-flex items-center gap-1" dir="ltr">
                         <Mail className="h-3.5 w-3.5" /> {s.submitter_email}
                       </span>
+                    )}
+                    {s.submitter_phone && (
+                      <a
+                        href={`tel:${s.submitter_phone.replace(/[^\d+]/g, "")}`}
+                        className="inline-flex items-center gap-1 hover:text-accent"
+                        dir="ltr"
+                      >
+                        <Phone className="h-3.5 w-3.5" /> {s.submitter_phone}
+                      </a>
                     )}
                     <span className="inline-flex items-center gap-1">
                       <CalendarDays className="h-3.5 w-3.5" /> {formatDateBn(s.created_at)}

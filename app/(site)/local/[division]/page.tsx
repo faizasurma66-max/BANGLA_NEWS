@@ -44,11 +44,6 @@ export default async function DivisionPage({ params }: Params) {
   return (
     <>
       <PageHero
-        breadcrumb={[
-          { label: "Home", href: "/" },
-          { label: "Local Newspaper", href: "/local" },
-          { label: category.title },
-        ]}
         kicker="Division"
         accent={category.accent}
         title={category.title}

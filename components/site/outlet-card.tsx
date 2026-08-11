@@ -36,10 +36,10 @@ export function OutletCard({
   const handle = outlet.slug ?? outlet.id;
   const external = outlet.open_external || shouldOpenExternal;
 
-  // Homepage tile: 110px box with a 90px logo frame; the name sits in the strip
+  // Homepage tile: 88px box with a 68px logo frame; the name sits in the strip
   // below. Width comes from the grid track (six per row on desktop).
   const className = compact
-    ? "group relative flex h-[110px] w-full flex-col overflow-hidden rounded-lg border border-line bg-surface transition duration-200 hover:border-accent-ring hover:shadow-sm"
+    ? "group relative flex h-[88px] w-full flex-col overflow-hidden rounded-lg border border-line bg-surface transition duration-200 hover:border-accent-ring hover:shadow-sm"
     : "group relative flex flex-col border-b border-r border-line bg-surface transition duration-200 hover:z-10 hover:ring-1 hover:ring-accent-ring";
 
   const body = compact ? (
@@ -49,11 +49,11 @@ export function OutletCard({
           Top
         </span>
       )}
-      <div className="h-[90px] w-full shrink-0">
+      <div className="h-[68px] w-full shrink-0">
         <OutletLogo outlet={outlet} compact />
       </div>
       <div className="flex flex-1 items-center justify-center border-t border-line px-1.5">
-        <p className="truncate text-[10px] font-semibold leading-none text-ink transition-colors group-hover:text-accent">
+        <p className="truncate text-[9.5px] font-semibold leading-none text-ink transition-colors group-hover:text-accent">
           {outlet.name}
         </p>
       </div>

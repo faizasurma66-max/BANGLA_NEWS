@@ -76,6 +76,7 @@ create table if not exists public.submissions (
   category_suggestion text,
   logo_url           text,
   submitter_email    text,
+  submitter_phone    text,
   notes              text,
   status             text not null default 'pending'
                      check (status in ('pending', 'approved', 'rejected')),

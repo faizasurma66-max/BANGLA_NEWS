@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ChevronDown, Menu, X, ArrowUpRight } from "lucide-react";
 import { Logo } from "./logo";
-import { PRIMARY_NAV } from "@/lib/site-config";
+import { PRIMARY_NAV, TRAILING_NAV } from "@/lib/site-config";
 import type { Category } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -109,6 +109,12 @@ export function HeaderClient({
               ))}
             </div>
           </Dropdown>
+
+          {TRAILING_NAV.map((item) => (
+            <NavLink key={item.href} href={item.href} active={isActive(pathname, item.href)}>
+              {item.label}
+            </NavLink>
+          ))}
         </nav>
 
         <div className="flex items-center gap-2">
@@ -148,6 +154,17 @@ export function HeaderClient({
             </div>
             <MobileGroup title="All Bangla Newspapers" items={mainCategories} base="/category" />
             <MobileGroup title="Local Newspaper" items={divisions} base="/local" />
+            <div className="flex flex-col">
+              {TRAILING_NAV.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="border-b border-line/70 py-3 text-[15px] font-medium text-ink"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
             <Link
               href="/submit"
               className="inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-accent px-4 py-3 text-sm font-semibold text-white"

@@ -1,11 +1,18 @@
 import { z } from "zod";
 
+/**
+ * Slugs are normalised with `toSlug()` before they reach validation, so this
+ * only guards the result. It is never what the admin has to type: they may
+ * enter "Khulna Division News" or leave the box empty to inherit the title.
+ * Unicode letters are allowed so Bangla titles produce a usable slug.
+ */
 const slugRule = z
   .string()
   .trim()
-  .min(1)
+  .min(1, "একটি slug দিন, অথবা শিরোনাম লিখুন — slug নিজে থেকেই তৈরি হবে")
   .max(90)
-  .regex(/^[a-z0-9-]+$/, "Use lowercase letters, numbers and hyphens only");
+  // \p{M} keeps Bengali vowel signs, which are combining marks, not letters.
+  .regex(/^[\p{L}\p{N}\p{M}-]+$/u, "Slug can only contain letters, numbers and hyphens");
 
 export const loginInput = z.object({
   username: z.string().trim().min(1, "ইউজারনেম দিন").max(80),
@@ -62,6 +69,21 @@ export const submissionInput = z.object({
   category_suggestion: z.string().trim().max(120).optional().default(""),
   submitter_email: z
     .union([z.literal(""), z.email("Enter a valid email").max(160)])
+    .optional()
+    .default(""),
+  // Deliberately loose: submitters write +880, 01x, spaces, dashes and
+  // brackets, and rejecting any of those buys nothing for a field a human
+  // reads off the moderation queue.
+  submitter_phone: z
+    .union([
+      z.literal(""),
+      z
+        .string()
+        .trim()
+        .min(6, "Enter a valid mobile number")
+        .max(32)
+        .regex(/^[0-9+()\-.\s]+$/, "Use digits, spaces and + ( ) - only"),
+    ])
     .optional()
     .default(""),
   notes: z.string().trim().max(1000).optional().default(""),

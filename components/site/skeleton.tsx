@@ -4,8 +4,8 @@ import { COMPACT_GRID } from "./outlet-card";
 
 export function SkeletonCard() {
   return (
-    <div className="flex h-[110px] w-full flex-col overflow-hidden rounded-lg border border-line bg-surface">
-      <div className="skeleton h-[90px] w-full shrink-0" />
+    <div className="flex h-[88px] w-full flex-col overflow-hidden rounded-lg border border-line bg-surface">
+      <div className="skeleton h-[68px] w-full shrink-0" />
       <div className="flex flex-1 items-center justify-center border-t border-line px-1.5">
         <div className="skeleton h-2.5 w-3/4 rounded" />
       </div>
@@ -59,7 +59,9 @@ export function SkeletonBlogGrid({ count = 6 }: { count?: number }) {
 
 export function PageHeroSkeleton() {
   return (
-    <section className="border-b border-line bg-grain">
+    // Matches PageHero's white background, so the hero does not flash grey
+    // before the real content streams in.
+    <section className="border-b border-line bg-surface">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-14 lg:px-8">
         <div className="skeleton h-3.5 w-40 rounded" />
         <div className="skeleton mt-4 h-9 w-2/3 max-w-lg rounded" />
