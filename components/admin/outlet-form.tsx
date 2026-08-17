@@ -68,6 +68,19 @@ export function OutletForm({
             error={fe.url}
             placeholder="https://example.com"
           />
+          <Field
+            label="Slug (ঐচ্ছিক)"
+            name="slug"
+            dir="ltr"
+            defaultValue={outlet?.slug ?? ""}
+            error={fe.slug}
+            placeholder="prothom-alo"
+            hint={
+              outlet
+                ? `সাইটে ঠিকানা: /read/${outlet.slug || outlet.id}। ফাঁকা রাখলে বর্তমান slug অপরিবর্তিত থাকবে।`
+                : "ফাঁকা রাখলে নাম থেকে নিজে থেকেই তৈরি হবে — যেমন /read/prothom-alo। একই slug আগে থেকে থাকলে শেষে -2, -3 বসবে।"
+            }
+          />
           <div className="grid gap-5 sm:grid-cols-2">
             <Select
               label="ক্যাটাগরি"

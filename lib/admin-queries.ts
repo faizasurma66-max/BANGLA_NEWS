@@ -15,6 +15,7 @@ import type { Category, Post, Submission } from "@/lib/types";
 
 export type AdminOutlet = {
   id: string;
+  slug: string | null;
   name: string;
   name_bn: string | null;
   url: string;
@@ -33,6 +34,7 @@ export type AdminOutlet = {
 function mapOutlet(r: Record<string, any>): AdminOutlet {
   return {
     id: r.id,
+    slug: r.slug ?? null,
     name: r.name,
     name_bn: r.name_bn,
     url: r.url,

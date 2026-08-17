@@ -14,6 +14,32 @@ import { slugify } from "@/lib/seed-data";
 const BUCKET = "media";
 const MAX_BYTES = 8 * 1024 * 1024;
 
+/**
+ * Delete an uploaded asset given its public URL.
+ *
+ * Only touches files this app uploaded: the URL has to point at one of our own
+ * storage buckets, so a row holding an external logo URL (or a hand-typed one)
+ * is left alone. Best-effort — a storage failure must not block the database
+ * delete that follows it, or the row becomes undeletable.
+ */
+export async function deleteUploadedImage(publicUrl: string | null | undefined) {
+  if (!publicUrl) return;
+
+  // .../storage/v1/object/public/<bucket>/<path>
+  const m = publicUrl.match(/\/storage\/v1\/object\/public\/([^/]+)\/(.+)$/);
+  if (!m) return;
+  const [, bucket, rawPath] = m;
+  if (bucket !== BUCKET && bucket !== "logos") return;
+
+  const path = decodeURIComponent(rawPath.split("?")[0]);
+  try {
+    const { error } = await supabaseAdmin().storage.from(bucket).remove([path]);
+    if (error) throw error;
+  } catch (e) {
+    console.warn(`[uploads] could not remove ${bucket}/${path}:`, e);
+  }
+}
+
 export async function uploadImageField(
   formData: FormData,
   field: string,

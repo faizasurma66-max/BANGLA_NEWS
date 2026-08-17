@@ -5,7 +5,9 @@ import { revalidatePath } from "next/cache";
 import { getCurrentAdmin } from "@/lib/auth";
 import { can, type SectionKey } from "@/lib/permissions";
 import { hasServiceRole } from "@/lib/env";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { supabaseAdmin, LOGO_BUCKET } from "@/lib/supabase/admin";
+import { deleteUploadedImage } from "@/lib/uploads";
 import { outletInput, categoryInput, postInput } from "@/lib/validation";
 import { slugify } from "@/lib/seed-data";
 import { toSlug } from "@/lib/utils";
@@ -89,6 +91,35 @@ function returnTo(formData: FormData, fallback: string): string {
 /* Outlets                                                                     */
 /* -------------------------------------------------------------------------- */
 
+/**
+ * A free `outlets.slug`, derived from the name (or whatever the admin typed).
+ *
+ * `outlets_slug_idx` is unique, and two papers can legitimately share a name
+ * across categories, so a taken slug gets -2, -3, … appended. Returns null when
+ * there is nothing sluggable — the column is nullable and /read/[slug] falls
+ * back to the uuid, so a null is safe rather than fatal.
+ */
+async function uniqueOutletSlug(
+  sb: SupabaseClient,
+  desired: string,
+  excludeId?: string,
+): Promise<string | null> {
+  const base = toSlug(desired);
+  if (!base) return null;
+
+  const query = sb.from("outlets").select("slug").like("slug", `${base}%`);
+  const { data } = excludeId ? await query.neq("id", excludeId) : await query;
+
+  const taken = new Set(
+    (data ?? []).map((r) => (r as { slug: string | null }).slug).filter(Boolean),
+  );
+  if (!taken.has(base)) return base;
+  for (let n = 2; n < 500; n++) {
+    if (!taken.has(`${base}-${n}`)) return `${base}-${n}`;
+  }
+  return `${base}-${Date.now()}`;
+}
+
 async function uploadLogoIfPresent(formData: FormData): Promise<string | null> {
   const file = formData.get("logo_file");
   if (!(file instanceof File) || file.size === 0) return null;
@@ -154,7 +185,7 @@ export async function upsertOutlet(
       sortOrder = (last?.sort_order ?? 0) + 10;
     }
 
-    const row = {
+    const row: Record<string, unknown> = {
       category_id: cat.id,
       name: data.name,
       name_bn: data.name_bn || null,
@@ -166,6 +197,17 @@ export async function upsertOutlet(
       open_external: data.open_external,
       sort_order: sortOrder,
     };
+
+    // Give every outlet a readable /read/[slug] handle. Admin-created rows used
+    // to be saved with slug = null and fell back to the raw uuid in the URL.
+    // On edit the slug is only rewritten when the admin actually typed one, so
+    // renaming a paper never silently breaks its existing link.
+    const typedSlug = String(formData.get("slug") ?? "");
+    if (!id) {
+      row.slug = await uniqueOutletSlug(sb, typedSlug || data.name);
+    } else if (toSlug(typedSlug)) {
+      row.slug = await uniqueOutletSlug(sb, typedSlug, id);
+    }
 
     if (id) {
       const { error } = await sb.from("outlets").update(row).eq("id", id);
@@ -229,8 +271,22 @@ export async function deleteOutlet(formData: FormData) {
   if (blocked) return;
   const id = String(formData.get("id") ?? "");
   if (id) {
-    await supabaseAdmin().from("outlets").delete().eq("id", id);
-    refreshDirectory();
+    const sb = supabaseAdmin();
+    // Read the logo before the row goes, then drop the stored file too, so a
+    // deleted newspaper leaves nothing behind in the project.
+    const { data: row } = await sb
+      .from("outlets")
+      .select("logo_url")
+      .eq("id", id)
+      .maybeSingle();
+
+    const { error } = await sb.from("outlets").delete().eq("id", id);
+    if (!error) {
+      await deleteUploadedImage((row as { logo_url?: string | null } | null)?.logo_url);
+      refreshDirectory();
+    } else {
+      console.error("[admin] deleteOutlet failed:", error);
+    }
   }
   redirect(returnTo(formData, "/admin/outlets"));
 }
@@ -406,6 +462,39 @@ export async function rejectSubmission(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   if (id) {
     await supabaseAdmin().from("submissions").update({ status: "rejected" }).eq("id", id);
+  }
+  redirect("/admin/submissions");
+}
+
+/**
+ * Erase a submission for good — the row *and* the logo the sender uploaded.
+ *
+ * Distinct from `rejectSubmission`, which only flips the status and keeps the
+ * row in the review history. This leaves nothing behind in Supabase, so it also
+ * clears the storage object; skipping that would slowly fill the media bucket
+ * with files no row references any more.
+ */
+export async function deleteSubmission(formData: FormData) {
+  const blocked = await ensureCanWrite("submissions");
+  if (blocked) return;
+  const id = String(formData.get("id") ?? "");
+  if (!id) redirect("/admin/submissions");
+
+  const sb = supabaseAdmin();
+  try {
+    // Read the logo first: after the row is gone the URL is unrecoverable.
+    const { data: row } = await sb
+      .from("submissions")
+      .select("logo_url")
+      .eq("id", id)
+      .maybeSingle();
+
+    const { error } = await sb.from("submissions").delete().eq("id", id);
+    if (error) throw error;
+
+    await deleteUploadedImage((row as { logo_url?: string | null } | null)?.logo_url);
+  } catch (e) {
+    console.error("[admin] deleteSubmission failed:", e);
   }
   redirect("/admin/submissions");
 }

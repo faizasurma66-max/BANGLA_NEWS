@@ -1,6 +1,7 @@
 import { Check, X, ExternalLink, Inbox, Mail, Phone, CalendarDays } from "lucide-react";
 import { adminListSubmissions, adminListCategories } from "@/lib/admin-queries";
-import { approveSubmission, rejectSubmission } from "@/lib/actions/admin";
+import { approveSubmission, rejectSubmission, deleteSubmission } from "@/lib/actions/admin";
+import { DeleteButton } from "@/components/admin/delete-button";
 import { requireSection } from "@/lib/auth";
 import { hasServiceRole } from "@/lib/env";
 import { bnNum, formatDateBn, hostname } from "@/lib/utils";
@@ -143,6 +144,14 @@ export default async function SubmissionsPage() {
                     <X className="h-4 w-4" /> বাতিল
                   </button>
                 </form>
+                <div className="ml-auto">
+                  <DeleteButton
+                    action={deleteSubmission}
+                    hidden={{ id: s.id }}
+                    label="স্থায়ীভাবে মুছুন"
+                    confirmText={`“${s.outlet_name}” সাবমিশনটি স্থায়ীভাবে মুছে ফেলবেন? সাবমিশনটি এবং এর সাথে আপলোড করা লোগো ডেটাবেজ থেকে একেবারে মুছে যাবে — ফিরিয়ে আনা যাবে না।`}
+                  />
+                </div>
               </div>
             </Card>
           ))}
@@ -151,7 +160,9 @@ export default async function SubmissionsPage() {
 
       {handled.length > 0 && (
         <div className="mt-8">
-          <h2 className="mb-2.5 px-0.5 text-[0.9375rem] font-bold text-a-ink">রিভিউ ইতিহাস</h2>
+          <h2 className="mb-2.5 px-0.5 text-[0.9375rem] font-bold text-a-ink">
+            রিভিউ ইতিহাস <span className="font-normal text-a-faint">({bnNum(handled.length)})</span>
+          </h2>
           <TableShell>
             <table className="w-full min-w-[520px] border-collapse">
               <thead>
@@ -159,10 +170,11 @@ export default async function SubmissionsPage() {
                   <Th align="left">সাইট</Th>
                   <Th align="left" className="w-40">তারিখ</Th>
                   <Th align="right" className="w-32">ফলাফল</Th>
+                  <Th align="right" className="w-28">অ্যাকশন</Th>
                 </tr>
               </thead>
               <tbody>
-                {handled.slice(0, 20).map((s) => (
+                {handled.map((s) => (
                   <Tr key={s.id}>
                     <Td>
                       <p className="font-semibold text-a-ink">{s.outlet_name}</p>
@@ -175,6 +187,15 @@ export default async function SubmissionsPage() {
                       <Badge tone={s.status === "approved" ? "ok" : "muted"}>
                         {s.status === "approved" ? "অনুমোদিত" : "বাতিল"}
                       </Badge>
+                    </Td>
+                    <Td align="right">
+                      <div className="admin-row-actions flex justify-end">
+                        <DeleteButton
+                          action={deleteSubmission}
+                          hidden={{ id: s.id }}
+                          confirmText={`“${s.outlet_name}” সাবমিশনটি স্থায়ীভাবে মুছে ফেলবেন? ডেটাবেজ থেকে একেবারে মুছে যাবে — ফিরিয়ে আনা যাবে না।`}
+                        />
+                      </div>
                     </Td>
                   </Tr>
                 ))}
