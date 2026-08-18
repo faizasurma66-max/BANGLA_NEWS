@@ -64,10 +64,10 @@ export function PageHero({
           </div>
         )}
 
-        <h1 className="font-serif text-2xl font-semibold leading-tight tracking-tight text-ink sm:text-[1.75rem]">
+        <h1 className="font-serif text-2xl font-semibold leading-tight tracking-tight text-ink sm:text-3xl lg:text-[2rem]">
           {title}
           {titleBn && (
-            <span className="ml-2 align-middle font-bangla text-lg font-normal text-muted">
+            <span className="ml-2 align-middle font-bangla text-lg font-normal text-muted sm:text-xl">
               {titleBn}
             </span>
           )}

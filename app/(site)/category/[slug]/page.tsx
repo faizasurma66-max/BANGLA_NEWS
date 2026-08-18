@@ -8,7 +8,6 @@ import {
 } from "@/lib/queries";
 import { PageHero } from "@/components/site/page-hero";
 import { CategoryFilter } from "@/components/site/category-filter";
-import { GROUPS } from "@/lib/site-config";
 
 export const revalidate = 3600;
 
@@ -44,8 +43,10 @@ export default async function CategoryPage({ params }: Params) {
 
   return (
     <>
+      {/* No kicker: the group label ("NATIONAL NEWSPAPERS") restated the page
+          title in smaller type and cost a whole line above the fold. The title
+          alone carries it, the way /local reads as "Local Newspaper by Division". */}
       <PageHero
-        kicker={GROUPS[category.group]}
         title={category.title}
         titleBn={category.title_bn}
         description={category.description}

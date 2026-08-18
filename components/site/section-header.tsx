@@ -1,7 +1,13 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
-/** Premium section header — replaces the reference's full-red bars. */
+/**
+ * Home page section heading.
+ *
+ * Title and "View all" sit on one row at every width — on mobile the title
+ * wraps and the button shrinks rather than dropping onto its own line, which
+ * was pushing the newspaper tiles further down the screen.
+ */
 export function SectionHeader({
   kicker,
   title,
@@ -18,8 +24,8 @@ export function SectionHeader({
   hrefLabel?: string;
 }) {
   return (
-    <div className="flex flex-col gap-4 border-b border-line pb-5 sm:flex-row sm:items-end sm:justify-between">
-      <div className="max-w-2xl">
+    <div className="flex flex-row items-center justify-between gap-3 border-b border-line pb-4 sm:pb-5">
+      <div className="min-w-0 max-w-2xl">
         {kicker && (
           <div className="mb-2 flex items-center gap-2">
             <span className="h-4 w-1 rounded-full bg-accent" />
@@ -28,12 +34,10 @@ export function SectionHeader({
             </span>
           </div>
         )}
-        {/* Deliberately understated: the newspaper tiles are the content here,
-            so the category heading sits a step below them in the hierarchy. */}
-        <h2 className="font-serif text-lg font-semibold leading-tight tracking-tight text-ink sm:text-xl">
+        <h2 className="font-serif text-xl font-semibold leading-tight tracking-tight text-ink sm:text-2xl">
           {title}
           {titleBn && (
-            <span className="ml-2 align-middle font-bangla text-sm font-normal text-muted">
+            <span className="ml-2 align-middle font-bangla text-base font-normal text-muted">
               {titleBn}
             </span>
           )}
@@ -45,10 +49,10 @@ export function SectionHeader({
       {href && (
         <Link
           href={href}
-          className="group inline-flex shrink-0 items-center gap-1.5 self-start rounded-full border border-line bg-surface px-4 py-2 text-sm font-medium text-ink transition hover:border-accent hover:text-accent sm:self-auto"
+          className="group inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-line bg-surface px-3 py-1.5 text-xs font-medium text-ink transition hover:border-accent hover:text-accent sm:px-4 sm:py-2 sm:text-sm"
         >
           {hrefLabel}
-          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+          <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 sm:h-4 sm:w-4" />
         </Link>
       )}
     </div>
