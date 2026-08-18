@@ -18,13 +18,20 @@ const FOOTER_HIDDEN = new Set([
   "fm-radio", // Top Bangla FM Radio
 ]);
 
+/** How many category links the footer's Directory column shows. */
+const FOOTER_DIRECTORY_LIMIT = 5;
+
 export async function SiteFooter() {
   const [cats, settings] = await Promise.all([getAllCategories(), getSiteSettings()]);
 
+  // Five, not eight: several category titles ("Bangladeshi English Newspapers",
+  // "Bangladesh Government Portals") wrap to two lines, so a longer list left
+  // the Directory column running well past Explore and About and made the row
+  // of columns look ragged. Everything still lives in the header mega-menu.
   const columns = cats
     .filter((c) => !c.parent_slug && !FOOTER_HIDDEN.has(c.slug))
     .sort((a, b) => a.sort_order - b.sort_order)
-    .slice(0, 8);
+    .slice(0, FOOTER_DIRECTORY_LIMIT);
 
   // Only the socials the admin actually filled in are rendered.
   const socials = socialLinks(settings);
