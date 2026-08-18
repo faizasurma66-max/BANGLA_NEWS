@@ -13,7 +13,6 @@ export default async function PrivacyPage() {
   const s = await getSiteSettings();
   return (
     <ContentPage
-      kicker="Legal"
       title="Privacy Policy"
       intro="What we collect, and what we do not."
       content={s.page_privacy}

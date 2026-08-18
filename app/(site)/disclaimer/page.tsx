@@ -13,7 +13,6 @@ export default async function DisclaimerPage() {
   const s = await getSiteSettings();
   return (
     <ContentPage
-      kicker="Legal"
       title="Disclaimer"
       intro="Please read this before relying on any listing."
       content={s.page_disclaimer}

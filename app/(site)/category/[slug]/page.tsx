@@ -43,9 +43,6 @@ export default async function CategoryPage({ params }: Params) {
 
   return (
     <>
-      {/* No kicker: the group label ("NATIONAL NEWSPAPERS") restated the page
-          title in smaller type and cost a whole line above the fold. The title
-          alone carries it, the way /local reads as "Local Newspaper by Division". */}
       <PageHero
         title={category.title}
         titleBn={category.title_bn}

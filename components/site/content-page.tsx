@@ -30,13 +30,11 @@ const PROSE =
  * back to the built-in copy so the page is never blank.
  */
 export function ContentPage({
-  kicker,
   title,
   intro,
   content,
   fallback,
 }: {
-  kicker: string;
   title: string;
   intro?: string;
   content: string;
@@ -50,11 +48,10 @@ export function ContentPage({
     <>
       <PageHero
         breadcrumb={[{ label: "Home", href: "/" }, { label: title }]}
-        kicker={kicker}
         title={title}
         description={intro}
       />
-      <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-3xl px-4 pb-12 pt-6 sm:px-6 sm:pt-8 lg:px-8">
         {rich ? (
           <div className={PROSE} dangerouslySetInnerHTML={{ __html: content }} />
         ) : (

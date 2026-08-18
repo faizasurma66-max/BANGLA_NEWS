@@ -16,7 +16,6 @@ export default async function AboutPage() {
   const s = await getSiteSettings();
   return (
     <ContentPage
-      kicker="About"
       title="About Us"
       intro={`Who we are and why ${s.site_name} exists.`}
       content={s.page_about}

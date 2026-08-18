@@ -13,7 +13,6 @@ export default function ConverterPage() {
     <>
       <PageHero
         breadcrumb={[{ label: "Home", href: "/" }, { label: "Bangla Converter" }]}
-        kicker="Free Tool"
         title="Bangla Converter"
         titleBn="বাংলা কনভার্টার"
         description="Type in English and get Bangla, convert between Bijoy and Unicode, and switch digits between ১২৩ and 123 — instantly, right in your browser."

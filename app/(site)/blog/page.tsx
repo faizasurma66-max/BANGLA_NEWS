@@ -18,7 +18,6 @@ export default async function BlogPage() {
     <>
       <PageHero
         breadcrumb={[{ label: "Home", href: "/" }, { label: "Blog" }]}
-        kicker="Journal"
         title="From the Blog"
         titleBn="ব্লগ"
         description="News, updates and guides on the Bangla media landscape."

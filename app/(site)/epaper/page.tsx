@@ -20,7 +20,6 @@ export default async function EpaperPage() {
   return (
     <>
       <PageHero
-        kicker="Digital Editions"
         title={category?.title ?? "Bangla ePaper Editions"}
         titleBn={category?.title_bn}
         description={category?.description}

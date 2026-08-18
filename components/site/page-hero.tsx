@@ -6,24 +6,21 @@ export type Crumb = { label: string; href?: string };
 /**
  * Page header for category, division, blog and content pages.
  *
- * Deliberately matches the type scale and vertical rhythm of `SectionHeader`
- * (the home page section titles). These pages lead with a grid of outlets, so
- * an oversized hero pushed the actual content below the fold on laptops.
+ * Matches `SectionHeader` (the home page section titles) exactly, so a heading
+ * is the same size wherever it appears. There is no kicker: an eyebrow label
+ * above the title ("Journal", "Legal", "Digital Editions") restated the page
+ * name in smaller type and cost a line above the fold on every page.
  */
 export function PageHero({
   breadcrumb,
-  kicker,
   title,
   titleBn,
   description,
-  accent,
 }: {
   breadcrumb?: Crumb[];
-  kicker?: string;
   title: string;
   titleBn?: string | null;
   description?: string | null;
-  accent?: string | null;
 }) {
   return (
     <section className="border-b border-line bg-surface">
@@ -49,25 +46,10 @@ export function PageHero({
           </nav>
         )}
 
-        {kicker && (
-          <div className="mb-2 flex items-center gap-2">
-            <span
-              className="h-4 w-1 rounded-full"
-              style={{ background: accent ?? "var(--color-accent)" }}
-            />
-            <span
-              className="text-xs font-semibold uppercase tracking-[0.14em]"
-              style={{ color: accent ?? "var(--color-accent)" }}
-            >
-              {kicker}
-            </span>
-          </div>
-        )}
-
-        <h1 className="font-serif text-2xl font-semibold leading-tight tracking-tight text-ink sm:text-3xl lg:text-[2rem]">
+        <h1 className="font-serif text-xl font-semibold leading-tight tracking-tight text-ink sm:text-2xl">
           {title}
           {titleBn && (
-            <span className="ml-2 align-middle font-bangla text-lg font-normal text-muted sm:text-xl">
+            <span className="ml-2 align-middle font-bangla text-base font-normal text-muted">
               {titleBn}
             </span>
           )}

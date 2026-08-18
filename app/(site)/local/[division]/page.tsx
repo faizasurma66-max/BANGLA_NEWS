@@ -44,8 +44,6 @@ export default async function DivisionPage({ params }: Params) {
   return (
     <>
       <PageHero
-        kicker="Division"
-        accent={category.accent}
         title={category.title}
         titleBn={category.title_bn}
         description={

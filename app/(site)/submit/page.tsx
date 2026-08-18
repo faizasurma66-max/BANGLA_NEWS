@@ -20,7 +20,6 @@ export default async function SubmitPage() {
     <>
       <PageHero
         breadcrumb={[{ label: "Home", href: "/" }, { label: "Submit a Site" }]}
-        kicker="Contribute"
         title="Submit your site"
         description="Know a Bangla newspaper, portal, radio station or ePaper we're missing? Send it over — every submission is reviewed before it goes live."
       />

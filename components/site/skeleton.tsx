@@ -63,8 +63,7 @@ export function PageHeroSkeleton() {
     // before the real content streams in.
     <section className="border-b border-line bg-surface">
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-7 lg:px-8">
-        <div className="skeleton h-3 w-32 rounded" />
-        <div className="skeleton mt-2.5 h-7 w-2/3 max-w-md rounded" />
+        <div className="skeleton h-6 w-2/3 max-w-md rounded" />
         <div className="skeleton mt-2.5 h-3.5 w-full max-w-xl rounded" />
       </div>
     </section>
