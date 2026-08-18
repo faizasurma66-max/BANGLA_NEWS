@@ -24,7 +24,7 @@ export default async function SubmitPage() {
         title="Submit your site"
         description="Know a Bangla newspaper, portal, radio station or ePaper we're missing? Send it over — every submission is reviewed before it goes live."
       />
-      <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-3xl px-4 pb-12 pt-6 sm:px-6 sm:pt-8 lg:px-8">
         <SubmitForm categories={categories} />
       </div>
     </>

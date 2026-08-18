@@ -51,7 +51,7 @@ export default async function CategoryPage({ params }: Params) {
         titleBn={category.title_bn}
         description={category.description}
       />
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4 pb-12 pt-6 sm:px-6 sm:pt-8 lg:px-8">
         <CategoryFilter outlets={outlets} globalOpenExternal={globalOpenExternal} />
       </div>
     </>

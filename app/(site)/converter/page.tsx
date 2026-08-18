@@ -18,7 +18,7 @@ export default function ConverterPage() {
         titleBn="বাংলা কনভার্টার"
         description="Type in English and get Bangla, convert between Bijoy and Unicode, and switch digits between ১২৩ and 123 — instantly, right in your browser."
       />
-      <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-4xl px-4 pb-12 pt-6 sm:px-6 sm:pt-8 lg:px-8">
         <Converter />
         <div className="mt-8 grid gap-4 sm:grid-cols-3">
           <Tip title="Phonetic typing">

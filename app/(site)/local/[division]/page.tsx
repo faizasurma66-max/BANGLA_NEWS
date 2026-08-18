@@ -53,7 +53,7 @@ export default async function DivisionPage({ params }: Params) {
           `Local and regional newspapers published across ${category.title}.`
         }
       />
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4 pb-12 pt-6 sm:px-6 sm:pt-8 lg:px-8">
         <CategoryFilter outlets={outlets} globalOpenExternal={globalOpenExternal} />
       </div>
     </>
