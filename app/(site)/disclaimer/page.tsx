@@ -14,7 +14,6 @@ export default async function DisclaimerPage() {
   return (
     <ContentPage
       title="Disclaimer"
-      intro="Please read this before relying on any listing."
       content={s.page_disclaimer}
       fallback={[
         "All newspaper, news portal, and channel links listed on this website are compiled purely for the convenience of readers. The content, logo, and information of each site belong to the respective organization. We do not guarantee the accuracy or correctness of any third-party content.",

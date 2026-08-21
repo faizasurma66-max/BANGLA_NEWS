@@ -17,7 +17,6 @@ export default async function AboutPage() {
   return (
     <ContentPage
       title="About Us"
-      intro={`Who we are and why ${s.site_name} exists.`}
       content={s.page_about}
       fallback={[
         `${s.site_name} is a directory site that compiles Bangla-language newspapers, online news portals, TV channels, e-papers, and many other kinds of sites from Bangladesh and India in one place, so readers can easily find what they need.`,

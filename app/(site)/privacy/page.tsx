@@ -14,7 +14,6 @@ export default async function PrivacyPage() {
   return (
     <ContentPage
       title="Privacy Policy"
-      intro="What we collect, and what we do not."
       content={s.page_privacy}
       fallback={[
         "All information shown on this site is compiled for educational and directory purposes only. We do not collect any personal information, other than what is submitted through the contact form, which is used only as needed.",

@@ -31,12 +31,10 @@ const PROSE =
  */
 export function ContentPage({
   title,
-  intro,
   content,
   fallback,
 }: {
   title: string;
-  intro?: string;
   content: string;
   fallback: string[];
 }) {
@@ -47,9 +45,7 @@ export function ContentPage({
   return (
     <>
       <PageHero
-        breadcrumb={[{ label: "Home", href: "/" }, { label: title }]}
         title={title}
-        description={intro}
       />
       <div className="mx-auto max-w-3xl px-4 pb-12 pt-6 sm:px-6 sm:pt-8 lg:px-8">
         {rich ? (
